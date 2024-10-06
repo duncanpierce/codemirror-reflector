@@ -1,0 +1,67 @@
+// https://lezer.codemirror.net/docs/guide/
+
+@skip { space | comment }
+
+@tokens {
+    space { $[ \t\n\r]+ }
+    comment { "#" ![\n]* }
+    Identifier { $[a-zA-Z]+ }
+    Number { $[0-9]+ }
+    String { '"' ![\n"] '"' }
+}
+
+@precedence {
+    neg @left,
+    mul @left,
+    add @left,
+    cmp @left
+}
+
+list<k> { "(" (k ("," k)*)? ")" }
+function { @specialize<Identifier,"func"> }
+var { @specialize<Identifier,"var"> }
+return { @specialize<Identifier,"return"> }
+
+@top Program { declaration* }
+
+declaration {
+    FunctionDeclaration |
+    (VariableDeclaration ";")
+}
+
+VariableDeclaration { var Identifier }
+FunctionDeclaration { function Identifier FormalParameters "{" FunctionBody "}" }
+FunctionBody { statement* }
+statement { (VariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
+
+FormalParameters { list<Identifier> }
+ActualParameters { list<Expression> }
+ReturnStatement { return Expression }
+Assignment { Identifier "=" Expression }
+
+Expression { expression }
+expression {
+    Number |
+    String |
+    Identifier |
+    Unary |
+    Binary |
+    SubExpression |
+    FunctionCall
+}
+
+Unary {
+    !neg "-" expression
+}
+
+Binary {
+    expression !mul "*" expression |
+    expression !mul "/" expression |
+    expression !add "+" expression |
+    expression !add "-" expression | 
+    expression !cmp ("<" | ">" | "=" | "<>" | "<=" | ">=") expression
+}
+
+SubExpression { "(" expression ")" }
+
+FunctionCall { Identifier ActualParameters }
