@@ -1,2 +1,1 @@
-# reflector
-Reflector - refactoring and code assistance for CodeMirror
+# Reflector - refactoring and code assistance for CodeMirror
