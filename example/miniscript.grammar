@@ -1,10 +1,10 @@
 // https://lezer.codemirror.net/docs/guide/
 
-@skip { space | comment }
+@skip { space | Comment }
 
 @tokens {
     space { $[ \t\n\r]+ }
-    comment { "#" ![\n]* }
+    Comment { "#" ![\n]* }
     Identifier { $[a-zA-Z]+ }
     Number { $[0-9]+ }
     String { '"' ![\n"] '"' }
@@ -18,9 +18,9 @@
 }
 
 list<k> { "(" (k ("," k)*)? ")" }
-function { @specialize<Identifier,"func"> }
-var { @specialize<Identifier,"var"> }
-return { @specialize<Identifier,"return"> }
+Function { @specialize<Identifier,"func"> }
+Var { @specialize<Identifier,"var"> }
+Return { @specialize<Identifier,"return"> }
 
 @top Program { declaration* }
 
@@ -29,14 +29,14 @@ declaration {
     (VariableDeclaration ";")
 }
 
-VariableDeclaration { var Identifier }
-FunctionDeclaration { function Identifier FormalParameters "{" FunctionBody "}" }
+VariableDeclaration { Var Identifier }
+FunctionDeclaration { Function Identifier FormalParameters "{" FunctionBody "}" }
 FunctionBody { statement* }
 statement { (VariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
 FormalParameters { list<Identifier> }
 ActualParameters { list<Expression> }
-ReturnStatement { return Expression }
+ReturnStatement { Return Expression }
 Assignment { Identifier "=" Expression }
 
 Expression { expression }
