@@ -6,7 +6,7 @@ import { lintGutter, lintKeymap } from "@codemirror/lint"
 import { defaultHighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
-import { markNodeProps } from "../src/markNodes"
+import { highlightProps } from "../src/highlightProps"
 import { highlightReferences } from "../src/highlightReferences"
 
 const editorElement = document.querySelector('#editor')!
@@ -53,7 +53,7 @@ let editorView = new EditorView({
                 ...lintKeymap,
             ]),
             // treeView(document.querySelector('#debug')!),
-            // markNodeProps,
+            // highlightProps,
             highlightReferences()
         ],
     }),

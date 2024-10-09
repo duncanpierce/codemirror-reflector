@@ -14,68 +14,6 @@ const styles = styleTags({
     String: tags.string,
 })
 
-const structure: StructureSpec = {
-    defaultSyntaxErrorMessage: "Syntax error",
-    scopes: [
-        {
-            kind: "Global variable",
-            scope: "Program",
-            definitions: {
-                "VariableDeclaration": {
-                    "Identifier": { checkFor: [unusedDefinition, multipleDefinitions] }
-                }
-            },
-            uses: {
-                "FunctionDeclaration/FunctionBody": {
-                    "Identifier": { checkFor: [undefinedUse] }
-                }
-            }
-        },
-        {
-            kind: "Function",
-            scope: "Program",
-            definitions: {
-                "FunctionDeclaration": {
-                    "Identifier": { checkFor: [unusedDefinition, multipleDefinitions] }
-                }
-            },
-            uses: {
-                "FunctionDeclaration/FunctionBody": {
-                    "FunctionCall/Identifier": { checkFor: [undefinedUse] }
-                }
-            }
-        },
-        {
-            kind: "Function parameter",
-            scope: "FunctionDeclaration",
-            definitions: {
-                "FormalParameters": {
-                    "Identifier": { checkFor: [unusedDefinition, multipleDefinitions] }
-                },
-            },
-            uses: {
-                "FunctionBody": {
-                    "Expression/Identifier": { checkFor: [undefinedUse] }
-                }
-            }
-        },
-        {
-            kind: "Local variable",
-            scope: "FunctionBody",
-            definitions: {
-                "VariableDeclaration": {
-                    "Identifier": { checkFor: [unusedDefinition] }
-                }
-            },
-            uses: {
-                "": { // TODO how do we say that a variable can be redefined and subsequent uses will only find the redefinition?
-                    "Expression/Identifier": { checkFor: [undefinedUse] }
-                }
-            }
-        },
-    ]
-}
-
 const miniscriptLanguage = LRLanguage.define({
     name: "miniscript",
     parser: parser.configure({
@@ -86,7 +24,6 @@ const miniscriptLanguage = LRLanguage.define({
     languageData: {
         closeBrackets: { brackets: ["(", "{"] },
         commentTokens: { line: "//" },
-        structure
     }
 })
 

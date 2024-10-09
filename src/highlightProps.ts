@@ -1,18 +1,18 @@
 import { syntaxTree } from "@codemirror/language"
 import { Range } from "@codemirror/state"
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
-import { definition, definitionNode, scope, scopeNode, use, useNode } from "./props"
+import { definitionNode, scope, scopeNode, use, useNode } from "./props"
 
 const definitionMark = Decoration.mark({ class: "cm-definition" })
 const useMark = Decoration.mark({ class: "cm-use" })
 
-const markNodePropsTheme = EditorView.baseTheme({
+const highlightPropsTheme = EditorView.baseTheme({
     ".cm-definition": { textDecoration: "2px solid underline blue" },
     ".cm-use": { textDecoration: "2px solid underline green" },
     ".cm-scope": { border: "2px solid red" }
 })
 
-export const markNodePropsPlugin = ViewPlugin.fromClass(class {
+export const highlightPropsPlugin = ViewPlugin.fromClass(class {
     decorations: DecorationSet
 
     constructor(view: EditorView) {
@@ -28,7 +28,7 @@ export const markNodePropsPlugin = ViewPlugin.fromClass(class {
     decorations: v => v.decorations,
 })
 
-export const markNodeProps = [markNodePropsPlugin, markNodePropsTheme]
+export const highlightProps = [highlightPropsPlugin, highlightPropsTheme]
 
 function createWidgets(view: EditorView): DecorationSet {
     let widgets: Range<Decoration>[] = []
