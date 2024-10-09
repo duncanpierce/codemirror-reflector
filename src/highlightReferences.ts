@@ -7,7 +7,8 @@ import { SyntaxNode, Tree } from "@lezer/common"
 export interface HighlightReferencesConfig {
     afterCursor?: boolean,
     definitions?: boolean,
-    uses?: boolean
+    uses?: boolean,
+    selfMark?: boolean,
 }
 
 const definitionMark = Decoration.mark({ class: "cm-definition" })
@@ -25,9 +26,10 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
             matches.forEach(def => {
                 widgets.push(Decoration.mark(definitionMark).range(def.from, def.to))
             })
-            // TODO need to sort
-            // let selfMark = matches.length > 0 ? useMark : unmatchedUseMark
-            // widgets.push(Decoration.mark(selfMark).range(use.from, use.to))
+            if (config.selfMark ?? true) {
+                let selfMark = matches.length > 0 ? useMark : unmatchedUseMark
+                widgets.push(Decoration.mark(selfMark).range(use.from, use.to))
+            }
         }
     }
 
@@ -38,12 +40,13 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
             matches.forEach(use => {
                 widgets.push(Decoration.mark(useMark).range(use.from, use.to))
             })
-            // TODO need to sort
-            // let selfMark = matches.length > 0 ? definitionMark : unmatchedDefinitionMark
-            // widgets.push(Decoration.mark(selfMark).range(definition.from, definition.to))
+            if (config.selfMark ?? true) {
+                let selfMark = matches.length > 0 ? definitionMark : unmatchedDefinitionMark
+                widgets.push(Decoration.mark(selfMark).range(definition.from, definition.to))
+            }
         }
     }
-    return Decoration.set(widgets)
+    return Decoration.set(widgets, true)
 }
 
 export function highlightReferences(config: HighlightReferencesConfig = {}): readonly Extension[] {
