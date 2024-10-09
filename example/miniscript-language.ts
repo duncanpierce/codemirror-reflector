@@ -1,7 +1,7 @@
 import { LanguageSupport, LRLanguage } from "@codemirror/language"
-import { parser } from "./miniscript.js"
+import { parser } from "./miniscript"
 import { styleTags, tags } from "@lezer/highlight"
-import { StructureSpec, unusedDefinition, multipleDefinitions, undefinedUse } from "../src/structure.js"
+import { StructureSpec, unusedDefinition, multipleDefinitions, undefinedUse } from "../src/OLDstructure.js"
 
 const styles = styleTags({
     "Function Var Return": tags.keyword,

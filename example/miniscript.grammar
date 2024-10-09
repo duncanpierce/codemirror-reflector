@@ -1,8 +1,8 @@
 // https://lezer.codemirror.net/docs/guide/
 
-@external prop scope from "../src/nodeProps"
-@external prop definition from "../src/nodeProps"
-@external prop use from "../src/nodeProps"
+@external prop scope from "../src/props"
+@external prop definition from "../src/props"
+@external prop use from "../src/props"
 
 @skip { space | Comment }
 

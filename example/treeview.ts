@@ -2,7 +2,7 @@ import { SelectionRange, Text } from "@codemirror/state"
 import { NodeProp, SyntaxNode } from "@lezer/common"
 import { EditorView } from "@codemirror/view"
 import { syntaxTree } from "@codemirror/language"
-import { definition, scope, use } from "../src/nodeProps"
+import { definition, scope, use } from "../src/props"
 
 
 function visitTree(element: HTMLElement, doc: Text, mainSelection: SelectionRange, node: SyntaxNode, indent: number = 0) {
@@ -42,10 +42,10 @@ function visitTree(element: HTMLElement, doc: Text, mainSelection: SelectionRang
 
     let content = doc.sliceString(node.from, node.to).replace(/\n/g, ' ↵ ')
 
-    let scopeProp = node.type.prop(scope)?.toString()
-    let useProp = node.type.prop(use)?.toString()
-    let definitionProp = node.type.prop(definition)?.toString()
-    let props = (scopeProp !== undefined ? `scope=${scopeProp}` : "") + (useProp !== undefined ? ` use=${useProp}` : "") + (definitionProp !== undefined ? ` definition=${definitionProp}` : "")
+    let scope = node.type.prop(scope)?.toString()
+    let use = node.type.prop(use)?.toString()
+    let definition = node.type.prop(definition)?.toString()
+    let props = (scope !== undefined ? `scope=${scope}` : "") + (use !== undefined ? ` use=${use}` : "") + (definition !== undefined ? ` definition=${definition}` : "")
 
     element.innerHTML += `
     <div class="${classes.join(' ')}">

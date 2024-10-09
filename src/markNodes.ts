@@ -1,9 +1,8 @@
 import { syntaxTree } from "@codemirror/language"
 import { Range } from "@codemirror/state"
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
-import { definition, scope, use } from "./nodeProps"
+import { definition, scope, use } from "./props"
 
-const scopeMark = Decoration.mark({ class: "cm-scope" })
 const definitionMark = Decoration.mark({ class: "cm-definition" })
 const useMark = Decoration.mark({ class: "cm-use" })
 
@@ -37,24 +36,24 @@ function createWidgets(view: EditorView): DecorationSet {
         syntaxTree(view.state).iterate({
             from, to,
             enter: node => {
-                let scopeProp = node.type.prop(scope)
-                let useProp = node.type.prop(use)
-                let definitionProp = node.type.prop(definition)
-                if (scopeProp) {
+                let scopeValue = node.type.prop(scope)
+                let useValue = node.type.prop(use)
+                let definitionValue = node.type.prop(definition)
+                if (scopeValue) {
                     widgets.push(ScopeWidget.create("[", node.from))
                 }
-                if (useProp) {
+                if (useValue) {
                     let widget = Decoration.mark(useMark).range(node.from, node.to)
                     widgets.push(widget)
                 }
-                if (definitionProp) {
+                if (definitionValue) {
                     let widget = Decoration.mark(definitionMark).range(node.from, node.to)
                     widgets.push(widget)
                 }
             },
             leave: node => {
-                let scopeProp = node.type.prop(scope)
-                if (scopeProp) {
+                let scopeValue = node.type.prop(scope)
+                if (scopeValue) {
                     widgets.push(ScopeWidget.create("]", node.to))
                 }
             }
