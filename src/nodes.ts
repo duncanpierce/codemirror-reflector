@@ -1,6 +1,6 @@
 import { SyntaxNode } from "@lezer/common"
 
-export class Scope {
+export class ScopeType {
     readonly namespace: readonly string[]
     readonly definitionPaths: readonly string[] | undefined
     readonly usePaths: readonly string[] | undefined
@@ -23,12 +23,16 @@ export class Scope {
 export class ScopeNode {
     readonly node: SyntaxNode
     readonly doc: Text
-    readonly scope: Scope
+    readonly type: ScopeType
 
-    constructor(scope: Scope, node: SyntaxNode, doc: Text) {
-        this.scope = scope
+    constructor(type: ScopeType, node: SyntaxNode, doc: Text) {
+        this.type = type
         this.node = node
         this.doc = doc
+    }
+
+    get parentScope(): ScopeNode | null {
+        return null
     }
 
     get allUses(): readonly UseNode[] {
@@ -48,7 +52,7 @@ export class ScopeNode {
     }
 }
 
-export class Use {
+export class UseType {
     private namespace: string
 
     constructor(namespace: string) {
@@ -67,10 +71,10 @@ export class Use {
 export class UseNode {
     readonly node: SyntaxNode
     readonly doc: Text
-    readonly use: Use
+    readonly type: UseType
 
-    constructor(use: Use, node: SyntaxNode, doc: Text) {
-        this.use = use
+    constructor(type: UseType, node: SyntaxNode, doc: Text) {
+        this.type = type
         this.node = node
         this.doc = doc
     }
@@ -84,7 +88,7 @@ export class UseNode {
     }
 }
 
-export class Definition {
+export class DefinitionType {
     readonly namespace: string
     readonly rules: readonly string[]
 
@@ -105,10 +109,10 @@ export class Definition {
 export class DefinitionNode {
     readonly node: SyntaxNode
     readonly doc: Text
-    readonly definition: Definition
+    readonly type: DefinitionType
 
-    constructor(definition: Definition, node: SyntaxNode, doc: Text) {
-        this.definition = definition
+    constructor(type: DefinitionType, node: SyntaxNode, doc: Text) {
+        this.type = type
         this.node = node
         this.doc = doc
     }

@@ -51,7 +51,7 @@ let editorView = new EditorView({
                 ...completionKeymap,
                 ...lintKeymap,
             ]),
-            treeView(document.querySelector('#debug')!),
+            // treeView(document.querySelector('#debug')!),
             markNodeProps,
         ],
     }),

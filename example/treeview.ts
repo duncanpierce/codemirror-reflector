@@ -42,10 +42,10 @@ function visitTree(element: HTMLElement, doc: Text, mainSelection: SelectionRang
 
     let content = doc.sliceString(node.from, node.to).replace(/\n/g, ' ↵ ')
 
-    let scope = node.type.prop(scope)?.toString()
-    let use = node.type.prop(use)?.toString()
-    let definition = node.type.prop(definition)?.toString()
-    let props = (scope !== undefined ? `scope=${scope}` : "") + (use !== undefined ? ` use=${use}` : "") + (definition !== undefined ? ` definition=${definition}` : "")
+    let scopeValue = node.type.prop(scope)?.toString()
+    let useValue = node.type.prop(use)?.toString()
+    let definitionValue = node.type.prop(definition)?.toString()
+    let props = (scopeValue !== undefined ? `scope=${scopeValue}` : "") + (useValue !== undefined ? ` use=${useValue}` : "") + (definitionValue !== undefined ? ` definition=${definitionValue}` : "")
 
     element.innerHTML += `
     <div class="${classes.join(' ')}">

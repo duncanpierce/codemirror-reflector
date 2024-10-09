@@ -1,10 +1,10 @@
 import { NodeProp, SyntaxNode } from '@lezer/common'
-import { Definition, Scope, Use } from './nodes'
+import { DefinitionType, ScopeType, UseType } from './nodes'
 
-export const scope = new NodeProp<Scope>({
+export const scope = new NodeProp<ScopeType>({
     deserialize(str) {
         let kv = parseKeyValues(str)
-        return new Scope(
+        return new ScopeType(
             kv.get("namespaces") ?? ["identifier"],
             kv.get("definitions"),
             kv.get("uses")
@@ -12,20 +12,20 @@ export const scope = new NodeProp<Scope>({
     }
 })
 
-export const definition = new NodeProp<Definition>({
+export const definition = new NodeProp<DefinitionType>({
     deserialize(str) {
         let kv = parseKeyValues(str)
-        return new Definition(
+        return new DefinitionType(
             (kv.get("namespace") || ["identifier"])[0],
             kv.get("rules") ?? []
         )
     }
 })
 
-export const use = new NodeProp<Use>({
+export const use = new NodeProp<UseType>({
     deserialize(str) {
         let kv = parseKeyValues(str)
-        return new Use((kv.get("namespace") ?? ["identifier"])[0])
+        return new UseType((kv.get("namespace") ?? ["identifier"])[0])
     }
 })
 
