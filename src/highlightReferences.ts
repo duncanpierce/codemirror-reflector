@@ -19,7 +19,7 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
         const use = useNode(cursorNode, state.doc)
         if (use) {
             console.log("definitions")
-            use.visibleDefinitions.forEach(def => {
+            use.matchingDefinitions.forEach(def => {
                 widgets.push(Decoration.mark(definitionMark).range(def.from, def.to))
             })
         }
@@ -29,7 +29,7 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
         const definition = definitionNode(cursorNode, state.doc)
         if (definition) {
             console.log("uses")
-            definition.visibleUses.forEach(use => {
+            definition.matchingUses.forEach(use => {
                 widgets.push(Decoration.mark(useMark).range(use.from, use.to))
             })
         }

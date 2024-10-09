@@ -1,5 +1,47 @@
 import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
+import { definition, definitionNode, scopeNode, useNode } from "./props"
+import { searchTree } from "./searchTree"
+
+
+class BaseNode<T> {
+    readonly nodeRef: SyntaxNodeRef
+    readonly doc: Text
+    readonly type: T
+
+    constructor(type: T, ref: SyntaxNodeRef, doc: Text) {
+        this.type = type
+        this.nodeRef = ref
+        this.doc = doc
+    }
+
+    get scope(): ScopeNode | null {
+        let searchNode = this.nodeRef.node
+        while (true) {
+            let maybeParentNode = searchNode.parent
+            if (maybeParentNode === null) {
+                return null
+            }
+            let maybeScope = scopeNode(maybeParentNode, this.doc)
+            if (maybeScope) {
+                return maybeScope
+            }
+            searchNode = maybeParentNode
+        }
+    }
+
+    get from(): number {
+        return this.nodeRef.from
+    }
+
+    get to(): number {
+        return this.nodeRef.to
+    }
+
+    get text(): string {
+        return this.doc.sliceString(this.from, this.to)
+    }
+}
 
 export class ScopeType {
     readonly namespace: readonly string[]
@@ -21,50 +63,38 @@ export class ScopeType {
     }
 }
 
-class BaseNode<T> {
-    readonly nodeRef: SyntaxNodeRef
-    readonly doc: Text
-    readonly type: T
-
-    constructor(type: T, ref: SyntaxNodeRef, doc: Text) {
-        this.type = type
-        this.nodeRef = ref
-        this.doc = doc
-    }
-
-    get from(): number {
-        return this.nodeRef.from
-    }
-
-    get to(): number {
-        return this.nodeRef.to
-    }
-}
-
 export class ScopeNode extends BaseNode<ScopeType> {
 
     constructor(type: ScopeType, ref: SyntaxNodeRef, doc: Text) {
         super(type, ref, doc)
     }
 
-    get parentScope(): ScopeNode | null {
-        return null
-    }
-
-    get allUses(): readonly UseNode[] {
+    get uses(): readonly UseNode[] {
         return []
     }
 
-    get visibleUses(): readonly UseNode[] {
+    get definitions(): readonly DefinitionNode[] {
         return []
     }
 
-    get allDefinitions(): readonly DefinitionNode[] {
-        return []
+    matchingDefinitions(use: UseNode): readonly DefinitionNode[] {
+        let text = use.text
+        let results = searchTree<DefinitionNode>(this.nodeRef, this.type.definitionPaths, nodeRef => {
+            let d = definitionNode(nodeRef, this.doc)
+            return d && d.text === text ? d : undefined
+        })
+        console.log(results)
+        return results
     }
 
-    get visibleDefinitions(): readonly DefinitionNode[] {
-        return []
+    matchingUses(definition: DefinitionNode): readonly UseNode[] {
+        let text = definition.text
+        let results = searchTree<UseNode>(this.nodeRef, this.type.definitionPaths, nodeRef => {
+            let u = useNode(nodeRef, this.doc)
+            return u && u.text === text ? u : undefined
+        })
+        console.log(results)
+        return results
     }
 }
 
@@ -90,12 +120,9 @@ export class UseNode extends BaseNode<UseType> {
         super(type, ref, doc)
     }
 
-    get allDefinitions(): readonly DefinitionNode[] {
-        return []
-    }
-
-    get visibleDefinitions(): readonly DefinitionNode[] {
-        return []
+    get matchingDefinitions(): readonly DefinitionNode[] {
+        // TODO try parent scopes if not found in the first one
+        return this.scope?.matchingDefinitions(this) ?? []
     }
 }
 
@@ -112,7 +139,7 @@ export class DefinitionType {
         return new DefinitionNode(this, ref, doc)
     }
 
-    toString(): string {    
+    toString(): string {
         return `namespace:${this.namespace} rules:${this.rules.join(" ")}`
     }
 }
@@ -128,12 +155,9 @@ export class DefinitionNode extends BaseNode<DefinitionType> {
         return []
     }
 
-    get allUses(): readonly UseNode[] {
-        return []
-    }
-
-    get visibleUses(): readonly UseNode[] {
-        return []
+    get matchingUses(): readonly UseNode[] {
+        // TODO try parent scopes if not found in the first one
+        return this.scope?.matchingUses(this) ?? []
     }
 }
 
