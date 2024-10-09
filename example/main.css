@@ -1,0 +1,47 @@
+#debug div {
+    font-family: monospace;
+}
+
+#debug .error {
+    background-color: lightcoral;
+}
+
+#debug .content {
+    color: blue;
+    background-color: #ddd;
+    padding: 0 3px;
+}
+
+#debug .context-match .node-name {
+    color: green;
+}
+
+#debug .bracket {
+    color: gray;
+}
+
+#debug .has-prop .node-name::after {
+    content: "(has prop)";
+}
+
+#debug .tree .node-name {
+    font-weight: bold;
+}
+
+#debug .node-name {
+    padding: 1px;
+}
+
+#debug .selection .node-name {
+    border: 1px solid blue;
+}
+
+#debug .matching-children .node-name::after {
+    content: "(matching children)";
+    color: #999;
+    font-weight: normal;
+}
+
+#debug .props {
+    color: red;
+}

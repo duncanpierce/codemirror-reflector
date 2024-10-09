@@ -1,11 +1,15 @@
 // https://lezer.codemirror.net/docs/guide/
 
+@external prop scope from "../src/nodeProps"
+@external prop definition from "../src/nodeProps"
+@external prop use from "../src/nodeProps"
+
 @skip { space | Comment }
 
 @tokens {
     space { $[ \t\n\r]+ }
     Comment { "#" ![\n]* }
-    Identifier { $[a-zA-Z]+ }
+    identifier { $[a-zA-Z]+ }
     Number { $[0-9]+ }
     String { '"' ![\n"] '"' }
 }
@@ -18,32 +22,32 @@
 }
 
 list<k> { "(" (k ("," k)*)? ")" }
-Function { @specialize<Identifier,"func"> }
-Var { @specialize<Identifier,"var"> }
-Return { @specialize<Identifier,"return"> }
+Function { @specialize<identifier,"func"> }
+Var { @specialize<identifier,"var"> }
+Return { @specialize<identifier,"return"> }
 
-@top Program { declaration* }
+@top Program[scope="namespaces:function variable"] { declaration* }
 
 declaration {
     FunctionDeclaration |
-    (VariableDeclaration ";")
+    (GlobalVariableDeclaration ";")
 }
 
-VariableDeclaration { Var Identifier }
-FunctionDeclaration { Function Identifier FormalParameters "{" FunctionBody "}" }
+GlobalVariableDeclaration { Var GlobalVariableDefinition }
+VariableDeclaration { Var LocalVariableDefinition }
+FunctionDeclaration[scope="namespaces:variable"] { Function FunctionDefinition FormalParameters "{" FunctionBody "}" }
 FunctionBody { statement* }
 statement { (VariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
-FormalParameters { list<Identifier> }
+FormalParameters { list<LocalVariableDefinition> }
 ActualParameters { list<Expression> }
 ReturnStatement { Return Expression }
-Assignment { Identifier "=" Expression }
+Assignment { VariableUse "=" Expression }
 
-Expression { expression }
-expression {
+Expression {
     Number |
     String |
-    Identifier |
+    VariableUse |
     Unary |
     Binary |
     SubExpression |
@@ -51,17 +55,24 @@ expression {
 }
 
 Unary {
-    !neg "-" expression
+    !neg "-" Expression
 }
 
 Binary {
-    expression !mul "*" expression |
-    expression !mul "/" expression |
-    expression !add "+" expression |
-    expression !add "-" expression | 
-    expression !cmp ("<" | ">" | "=" | "<>" | "<=" | ">=") expression
+    Expression !mul "*" Expression |
+    Expression !mul "/" Expression |
+    Expression !add "+" Expression |
+    Expression !add "-" Expression | 
+    Expression !cmp ("<" | ">" | "=" | "<>" | "<=" | ">=") Expression
 }
 
-SubExpression { "(" expression ")" }
+SubExpression { "(" Expression ")" }
 
-FunctionCall { Identifier ActualParameters }
+FunctionCall { FunctionUse ActualParameters }
+
+FunctionDefinition[definition="rules:unique,namespace:function"] { identifier }
+GlobalVariableDefinition[definition="rules:unique,namespace:variable"] { identifier }
+ParameterDefinition[definition="rules:unique,namespace:variable"] { identifier }
+LocalVariableDefinition[definition="rules:following,namespace:variable"] { identifier }
+VariableUse[use="namespace:variable"] { identifier }
+FunctionUse[use="namespace:function"] { identifier }

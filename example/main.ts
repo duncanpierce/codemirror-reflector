@@ -5,6 +5,8 @@ import { defaultKeymap } from "@codemirror/commands"
 import { lintGutter, lintKeymap } from "@codemirror/lint"
 import { defaultHighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { miniscript } from "./miniscript-language"
+import { treeView } from "./treeview"
+import { markNodeProps } from "../src/markNodeProps"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -49,6 +51,8 @@ let editorView = new EditorView({
                 ...completionKeymap,
                 ...lintKeymap,
             ]),
+            treeView(document.querySelector('#debug')!),
+            markNodeProps,
         ],
     }),
 })
