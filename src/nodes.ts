@@ -21,15 +21,30 @@ export class ScopeType {
     }
 }
 
-export class ScopeNode {
+class BaseNode<T> {
     readonly nodeRef: SyntaxNodeRef
     readonly doc: Text
-    readonly type: ScopeType
+    readonly type: T
 
-    constructor(type: ScopeType, ref: SyntaxNodeRef, doc: Text) {
+    constructor(type: T, ref: SyntaxNodeRef, doc: Text) {
         this.type = type
         this.nodeRef = ref
         this.doc = doc
+    }
+
+    get from(): number {
+        return this.nodeRef.from
+    }
+
+    get to(): number {
+        return this.nodeRef.to
+    }
+}
+
+export class ScopeNode extends BaseNode<ScopeType> {
+
+    constructor(type: ScopeType, ref: SyntaxNodeRef, doc: Text) {
+        super(type, ref, doc)
     }
 
     get parentScope(): ScopeNode | null {
@@ -69,15 +84,10 @@ export class UseType {
     }
 }
 
-export class UseNode {
-    readonly nodeRef: SyntaxNodeRef
-    readonly doc: Text
-    readonly type: UseType
+export class UseNode extends BaseNode<UseType> {
 
     constructor(type: UseType, ref: SyntaxNodeRef, doc: Text) {
-        this.type = type
-        this.nodeRef = ref
-        this.doc = doc
+        super(type, ref, doc)
     }
 
     get allDefinitions(): readonly DefinitionNode[] {
@@ -107,15 +117,10 @@ export class DefinitionType {
     }
 }
 
-export class DefinitionNode {
-    readonly nodeRef: SyntaxNodeRef
-    readonly doc: Text
-    readonly type: DefinitionType
+export class DefinitionNode extends BaseNode<DefinitionType> {
 
     constructor(type: DefinitionType, ref: SyntaxNodeRef, doc: Text) {
-        this.type = type
-        this.nodeRef = ref
-        this.doc = doc
+        super(type, ref, doc)
     }
 
     // All the document ranges in which this definition is in scope
