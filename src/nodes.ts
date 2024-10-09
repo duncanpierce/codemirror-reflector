@@ -1,4 +1,5 @@
-import { SyntaxNode } from "@lezer/common"
+import { SyntaxNodeRef } from "@lezer/common"
+import { Text } from "@codemirror/state"
 
 export class ScopeType {
     readonly namespace: readonly string[]
@@ -11,8 +12,8 @@ export class ScopeType {
         this.usePaths = usePaths
     }
 
-    of(node: SyntaxNode, doc: Text): ScopeNode {
-        return new ScopeNode(this, node, doc)
+    of(ref: SyntaxNodeRef, doc: Text): ScopeNode {
+        return new ScopeNode(this, ref, doc)
     }
 
     toString(): string {
@@ -21,13 +22,13 @@ export class ScopeType {
 }
 
 export class ScopeNode {
-    readonly node: SyntaxNode
+    readonly nodeRef: SyntaxNodeRef
     readonly doc: Text
     readonly type: ScopeType
 
-    constructor(type: ScopeType, node: SyntaxNode, doc: Text) {
+    constructor(type: ScopeType, ref: SyntaxNodeRef, doc: Text) {
         this.type = type
-        this.node = node
+        this.nodeRef = ref
         this.doc = doc
     }
 
@@ -59,8 +60,8 @@ export class UseType {
         this.namespace = namespace
     }
 
-    of(node: SyntaxNode, doc: Text): UseNode {
-        return new UseNode(this, node, doc)
+    of(ref: SyntaxNodeRef, doc: Text): UseNode {
+        return new UseNode(this, ref, doc)
     }
 
     toString(): string {
@@ -69,13 +70,13 @@ export class UseType {
 }
 
 export class UseNode {
-    readonly node: SyntaxNode
+    readonly nodeRef: SyntaxNodeRef
     readonly doc: Text
     readonly type: UseType
 
-    constructor(type: UseType, node: SyntaxNode, doc: Text) {
+    constructor(type: UseType, ref: SyntaxNodeRef, doc: Text) {
         this.type = type
-        this.node = node
+        this.nodeRef = ref
         this.doc = doc
     }
 
@@ -97,8 +98,8 @@ export class DefinitionType {
         this.rules = rules
     }
 
-    of(node: SyntaxNode, doc: Text): DefinitionNode {
-        return new DefinitionNode(this, node, doc)
+    of(ref: SyntaxNodeRef, doc: Text): DefinitionNode {
+        return new DefinitionNode(this, ref, doc)
     }
 
     toString(): string {    
@@ -107,13 +108,13 @@ export class DefinitionType {
 }
 
 export class DefinitionNode {
-    readonly node: SyntaxNode
+    readonly nodeRef: SyntaxNodeRef
     readonly doc: Text
     readonly type: DefinitionType
 
-    constructor(type: DefinitionType, node: SyntaxNode, doc: Text) {
+    constructor(type: DefinitionType, ref: SyntaxNodeRef, doc: Text) {
         this.type = type
-        this.node = node
+        this.nodeRef = ref
         this.doc = doc
     }
 
@@ -140,3 +141,4 @@ export class Range {
         this.to = to
     }
 }
+
