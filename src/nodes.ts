@@ -83,7 +83,6 @@ export class ScopeNode extends BaseNode<ScopeType> {
             let d = definitionNode(nodeRef, this.doc)
             return d && d.text === text ? d : undefined
         })
-        console.log(results)
         return results
     }
 
@@ -93,7 +92,6 @@ export class ScopeNode extends BaseNode<ScopeType> {
             let u = useNode(nodeRef, this.doc)
             return u && u.text === text ? u : undefined
         })
-        console.log(results)
         return results
     }
 }
