@@ -1,35 +1,46 @@
 import { syntaxTree } from "@codemirror/language"
-import { EditorState, Extension, Range, StateField } from "@codemirror/state"
+import { EditorState, Extension, Range, Text } from "@codemirror/state"
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view"
 import { definitionNode, useNode } from "./props"
+import { SyntaxNode, Tree } from "@lezer/common"
 
 export interface HighlightReferencesConfig {
+    afterCursor?: boolean,
     definitions?: boolean,
     uses?: boolean
 }
 
 const definitionMark = Decoration.mark({ class: "cm-definition" })
 const useMark = Decoration.mark({ class: "cm-use" })
+const unmatchedDefinitionMark = Decoration.mark({ class: "cm-unmatchedDefinition" })
+const unmatchedUseMark = Decoration.mark({ class: "cm-unmatchedUse" })
 
 function createWidgets(state: EditorState, config: HighlightReferencesConfig): DecorationSet {
     let widgets: Range<Decoration>[] = []
-    let cursorNode = syntaxTree(state).resolve(state.selection.main.head, -1)
 
     if (config.definitions ?? true) {
-        const use = useNode(cursorNode, state.doc)
+        let use = cursorNode(config.afterCursor ?? true, state, useNode)
         if (use) {
-            use.matchingDefinitions.forEach(def => {
+            let matches = use.matchingDefinitions
+            matches.forEach(def => {
                 widgets.push(Decoration.mark(definitionMark).range(def.from, def.to))
             })
+            // TODO need to sort
+            // let selfMark = matches.length > 0 ? useMark : unmatchedUseMark
+            // widgets.push(Decoration.mark(selfMark).range(use.from, use.to))
         }
     }
 
     if (config.uses ?? true) {
-        const definition = definitionNode(cursorNode, state.doc)
+        let definition = cursorNode(config.afterCursor ?? true, state, definitionNode)
         if (definition) {
-            definition.matchingUses.forEach(use => {
+            let matches = definition.matchingUses
+            matches.forEach(use => {
                 widgets.push(Decoration.mark(useMark).range(use.from, use.to))
             })
+            // TODO need to sort
+            // let selfMark = matches.length > 0 ? definitionMark : unmatchedDefinitionMark
+            // widgets.push(Decoration.mark(selfMark).range(definition.from, definition.to))
         }
     }
     return Decoration.set(widgets)
@@ -38,8 +49,10 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
 export function highlightReferences(config: HighlightReferencesConfig = {}): readonly Extension[] {
     return [
         EditorView.baseTheme({
-            ".cm-use": { textDecoration: "2px solid underline green" },
-            ".cm-definition": { textDecoration: "2px solid underline blue" },
+            ".cm-use": { backgroundColor: "#328c8252" },
+            ".cm-definition": { backgroundColor: "#328c8252" },
+            ".cm-unmatchedDefinition": { backgroundColor: "#bb555544" },
+            ".cm-unmatchedUse": { backgroundColor: "#bb555544" },
         }),
 
         ViewPlugin.fromClass(class {
@@ -58,4 +71,18 @@ export function highlightReferences(config: HighlightReferencesConfig = {}): rea
             decorations: v => v.decorations,
         })
     ]
+}
+
+function cursorNode<T>(afterCursor: boolean, state: EditorState, tryWrap: (node: SyntaxNode, doc: Text) => T | undefined): T | undefined {
+    let tree = syntaxTree(state)
+    let cursorPos = state.selection.main.head
+    let left = tryDirection(tree, state.doc, cursorPos, -1, tryWrap)
+    if (left) return left
+    if (!afterCursor) return
+    return tryDirection(tree, state.doc, cursorPos, 1, tryWrap)
+}
+
+function tryDirection<T>(tree: Tree, doc: Text, pos: number, direction: -1 | 1, tryWrap: (node: SyntaxNode, doc: Text) => T | undefined): T | undefined {
+    let cursorNode = tree.resolve(pos, direction)
+    return tryWrap(cursorNode, doc)
 }
