@@ -1,6 +1,6 @@
 # Reflector
 
-*Refactoring and code assistance for [CodeMirror](https://codemirror.net/)*
+*Refactoring, smart navigation and code assistance for [CodeMirror](https://codemirror.net/)*
 
 Reflector is a CodeMirror extension that allows [language packages](https://codemirror.net/examples/lang-package/) to provide **refactoring**, code **navigation** and **linting** features.
 
@@ -17,7 +17,7 @@ Reflector is a CodeMirror extension that allows [language packages](https://code
 
 ## How it works
 
-There are 2 pieces: the Reflector extension (this repository) and some additional [languageData](https://codemirror.net/docs/ref/#language.LRLanguage^define^spec.languageData) any [LRLanguage](https://codemirror.net/docs/ref/#language.LRLanguage) must provide in order to use the refactoring features. The `languageData` allows Reflector to understand the structure of the language.
+There are 2 pieces: the Reflector extension (this repository) and some additional [nodeProps](https://lezer.codemirror.net/docs/ref/#common.NodeProp) the Lezer [LRParser](https://lezer.codemirror.net/docs/ref/#lr.LRParser) grammar must be tagged with in order to use the refactoring features. These node props provide Reflector with some understanding of the structure of the language.
 
 Reflector uses core CodeMirror features to drive the cursor or selection to other parts of the file when you use navigation or refactoring features.
 
