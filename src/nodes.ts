@@ -1,7 +1,7 @@
 import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { definition, definitionNode, scopeNode, useNode } from "./props"
-import { searchTree } from "./searchTree"
+import { searchScopes, searchTree } from "./searchTree"
 
 
 class BaseNode<T> {
@@ -79,20 +79,20 @@ export class ScopeNode extends BaseNode<ScopeType> {
 
     matchingDefinitions(use: UseNode): readonly DefinitionNode[] {
         let text = use.text
-        let results = searchTree<DefinitionNode>(this.nodeRef, this.type.definitionPaths, nodeRef => {
-            let d = definitionNode(nodeRef, this.doc)
+        // NOTE: this inhibits subclassing ScopeNode, which might be a bit limiting?
+        return searchScopes(this, scope => searchTree(scope.nodeRef, scope.type.definitionPaths, nodeRef => {
+            let d = definitionNode(nodeRef, scope.doc)
             return d && d.text === text ? d : undefined
-        })
-        return results
+        }))
     }
 
     matchingUses(definition: DefinitionNode): readonly UseNode[] {
         let text = definition.text
-        let results = searchTree<UseNode>(this.nodeRef, this.type.definitionPaths, nodeRef => {
-            let u = useNode(nodeRef, this.doc)
-            return u && u.text === text ? u : undefined
-        })
-        return results
+        // NOTE: this inhibits subclassing ScopeNode, which might be a bit limiting?
+        return searchScopes(this, scope => searchTree(scope.nodeRef, scope.type.usePaths, nodeRef => {
+            let d = useNode(nodeRef, scope.doc)
+            return d && d.text === text ? d : undefined
+        }))
     }
 }
 

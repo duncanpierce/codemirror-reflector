@@ -1,4 +1,17 @@
 import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
+import { ScopeNode } from "./nodes"
+
+export function searchScopes<T>(scope: ScopeNode, searchFunc: (s: ScopeNode) => readonly T[]): readonly T[] {
+    let searchScope: ScopeNode | null = scope
+    while (searchScope) {
+        let results = searchFunc(searchScope)
+        if (results.length > 0) {
+            return results
+        }
+        searchScope = searchScope.scope
+    }
+    return []
+}
 
 export function searchTree<T>(nodeRef: SyntaxNodeRef, children: readonly string[] | undefined, searchFunc: (s: SyntaxNode) => (T | undefined)): readonly T[] {
     let node = nodeRef.node
