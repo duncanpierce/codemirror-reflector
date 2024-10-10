@@ -10,8 +10,7 @@
 
 GlobalVariableDefinition[definition] { identifier }
 
-FunctionDeclaration[scope="definitions=FormalParameters,uses=FunctionBody"]
-{ Function FunctionDefinition FormalParameters "{" FunctionBody "}" }
+FunctionDeclaration { Function FunctionDefinition FunctionScope[scope] { FormalParameters "{" FunctionBody "}" }}
 
 FunctionDefinition[definition] { identifier }
 

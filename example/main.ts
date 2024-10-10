@@ -25,7 +25,7 @@ func bar(a, b) {
     c = a / b;
     var d;
     d = baz(c); # call another function, declared later
-    return c; # this refers to the second c
+    return c + x; # this refers to the second c and x from a higher scope
 }
     
 var x;
