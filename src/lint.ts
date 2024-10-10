@@ -33,15 +33,21 @@ export function unusedDefinition(item: DiagnosticContext) {
     let definitionNode = item.definitionNode
     if (definitionNode) {
         if (definitionNode.matchingUses(item.doc).length === 0) {
-            item.info(`Definition '${item.text}' is never used`)
+            item.info(`'${item.text}' is never used`)
+        }
+    }
+}
+
+export function undefinedUse(item: DiagnosticContext) {
+    let useNode = item.useNode
+    if (useNode) {
+        if (useNode.matchingDefinitions(item.doc).length === 0) {
+            item.error(`'${item.text}' has not been defined`)
         }
     }
 }
 
 export function multipleDefinitions(item: DiagnosticContext) {
-}
-
-export function undefinedUse(item: DiagnosticContext) {
 }
 
 export type Severity = "hint" | "info" | "warning" | "error"
