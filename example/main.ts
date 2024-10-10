@@ -60,11 +60,8 @@ let editorView = new EditorView({
             // highlightProps,
             highlightReferences(),
             lintStructure({
-                errorNodes: [{linters: [error("Syntax error")]}],
-                allNodes: [{linters: [unusedDefinition, undefinedUse, multipleDefinitions]}],
-                nodeTypes: {
-                    Comment: [{linters: [hint("Comments are discouraged")]}],
-                }
+                errorNodes: [{ linters: [error("Syntax error")] }],
+                allNodes: [{ linters: [unusedDefinition, undefinedUse, multipleDefinitions] }],
             })
         ],
     }),
