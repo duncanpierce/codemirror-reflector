@@ -31,6 +31,9 @@ function searchSubTree<T>(
     scopeFunc: (s: ScopeNode) => readonly T[]
 ): readonly T[] {
     let maybeScope = scopeNode(node)
+    if (maybeScope) {
+        return scopeFunc(maybeScope)
+    }
     let results = []
     let maybeResult = findFunc(node)
     if (maybeResult) {
