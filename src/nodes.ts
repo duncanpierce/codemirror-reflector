@@ -1,7 +1,7 @@
 import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { definition, definitionNode, scopeNode, useNode } from "./props"
-import { searchScopes, searchTree } from "./searchTree"
+import { searchParentScopes, searchTree } from "./searchTree"
 
 
 class BaseNode<T> {
@@ -70,29 +70,27 @@ export class ScopeNode extends BaseNode<ScopeType> {
     }
 
     get uses(): readonly UseNode[] {
-        return []
+        return searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef, this.doc), nestedScope => nestedScope.undefinedUses)
+    }
+
+    get undefinedUses(): readonly UseNode[] {
+        let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef, this.doc), nestedScope => nestedScope.undefinedUses)
+        let definitions = Map.groupBy(this.definitions, definition => definition.text)
+        return undefinedUses.filter(use => !definitions.has(use.text))
     }
 
     get definitions(): readonly DefinitionNode[] {
-        return []
+        return searchTree(this.nodeRef, this.type.definitionPaths, nodeRef => definitionNode(nodeRef, this.doc), nestedScope => [])
     }
 
     matchingDefinitions(use: UseNode): readonly DefinitionNode[] {
         let text = use.text
-        // NOTE: this inhibits subclassing ScopeNode, which might be a bit limiting?
-        return searchScopes(this, scope => searchTree(scope.nodeRef, scope.type.definitionPaths, nodeRef => {
-            let d = definitionNode(nodeRef, scope.doc)
-            return d && d.text === text ? d : undefined
-        }))
+        return searchParentScopes(this, scope => scope.definitions.filter(d => d.text === text))
     }
 
     matchingUses(definition: DefinitionNode): readonly UseNode[] {
         let text = definition.text
-        // NOTE: this inhibits subclassing ScopeNode, which might be a bit limiting?
-        return searchScopes(this, scope => searchTree(scope.nodeRef, scope.type.usePaths, nodeRef => {
-            let d = useNode(nodeRef, scope.doc)
-            return d && d.text === text ? d : undefined
-        }))
+        return searchParentScopes(this, scope => scope.uses.filter(d => d.text === text))
     }
 }
 

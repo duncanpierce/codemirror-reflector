@@ -10,9 +10,9 @@ export const parser = LRParser.deserialize({
   nodeNames: "⚠ Comment Program FunctionDeclaration Function FunctionDefinition FormalParameters LocalVariableDefinition FunctionBody VariableDeclaration Var Assignment VariableUse Expression Number String Unary Binary SubExpression FunctionCall FunctionUse ActualParameters ReturnStatement Return GlobalVariableDeclaration GlobalVariableDefinition",
   maxTerm: 56,
   nodeProps: [
-    [scope, 2,"namespaces:function variable",3,"namespaces:variable"],
-    [definition, 5,"rules:unique,namespace:function",7,"rules:following,namespace:variable",25,"rules:unique,namespace:variable"],
-    [use, 12,"namespace:variable",20,"namespace:function"]
+    [scope, 2,"",3,"definitions=FormalParameters,uses=FunctionBody"],
+    [definition, -3,5,7,25,""],
+    [use, -2,12,20,""]
   ],
   skippedNodes: [0,1],
   repeatNodeCount: 4,

@@ -1,8 +1,29 @@
 // https://lezer.codemirror.net/docs/guide/
 
+// These are the extra things we need to add for Reflector to work
+
 @external prop scope from "../src/props"
 @external prop definition from "../src/props"
 @external prop use from "../src/props"
+
+@top Program[scope] { declaration* }
+
+GlobalVariableDefinition[definition] { identifier }
+
+FunctionDeclaration[scope="definitions=FormalParameters,uses=FunctionBody"]
+{ Function FunctionDefinition FormalParameters "{" FunctionBody "}" }
+
+FunctionDefinition[definition] { identifier }
+
+ParameterDefinition[definition] { identifier }
+
+LocalVariableDefinition[definition] { identifier }
+
+VariableUse[use] { identifier }
+
+FunctionUse[use] { identifier }
+
+// End of extra things for Reflector - everything below is ordinary grammar
 
 @skip { space | Comment }
 
@@ -26,8 +47,6 @@ Function { @specialize<identifier,"func"> }
 Var { @specialize<identifier,"var"> }
 Return { @specialize<identifier,"return"> }
 
-@top Program[scope="namespaces:function variable"] { declaration* }
-
 declaration {
     FunctionDeclaration |
     (GlobalVariableDeclaration ";")
@@ -35,7 +54,6 @@ declaration {
 
 GlobalVariableDeclaration { Var GlobalVariableDefinition }
 VariableDeclaration { Var LocalVariableDefinition }
-FunctionDeclaration[scope="namespaces:variable"] { Function FunctionDefinition FormalParameters "{" FunctionBody "}" }
 FunctionBody { statement* }
 statement { (VariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
@@ -69,10 +87,3 @@ Binary {
 SubExpression { "(" Expression ")" }
 
 FunctionCall { FunctionUse ActualParameters }
-
-FunctionDefinition[definition="rules:unique,namespace:function"] { identifier }
-GlobalVariableDefinition[definition="rules:unique,namespace:variable"] { identifier }
-ParameterDefinition[definition="rules:unique,namespace:variable"] { identifier }
-LocalVariableDefinition[definition="rules:following,namespace:variable"] { identifier }
-VariableUse[use="namespace:variable"] { identifier }
-FunctionUse[use="namespace:function"] { identifier }
