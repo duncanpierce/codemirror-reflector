@@ -1,5 +1,6 @@
 import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
 import { ScopeNode } from "./nodes"
+import { scope, scopeNode } from "./props"
 
 export function searchParentScopes<T>(scope: ScopeNode, scopeFunc: (s: ScopeNode) => readonly T[]): readonly T[] {
     let search: ScopeNode | null = scope
@@ -29,6 +30,7 @@ function searchSubTree<T>(
     findFunc: (s: SyntaxNode) => (T | undefined),
     scopeFunc: (s: ScopeNode) => readonly T[]
 ): readonly T[] {
+    let maybeScope = scopeNode(node)
     let results = []
     let maybeResult = findFunc(node)
     if (maybeResult) {

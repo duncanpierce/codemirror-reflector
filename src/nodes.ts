@@ -5,15 +5,7 @@ import { searchParentScopes, searchTree } from "./searchTree"
 
 
 class BaseNode<T> {
-    readonly nodeRef: SyntaxNodeRef
-    readonly doc: Text
-    readonly type: T
-
-    constructor(type: T, ref: SyntaxNodeRef, doc: Text) {
-        this.type = type
-        this.nodeRef = ref
-        this.doc = doc
-    }
+    constructor(readonly type: T, readonly nodeRef: SyntaxNodeRef) {}
 
     get scope(): ScopeNode | null {
         let searchNode = this.nodeRef.node
@@ -22,7 +14,7 @@ class BaseNode<T> {
             if (maybeParentNode === null) {
                 return null
             }
-            let maybeScope = scopeNode(maybeParentNode, this.doc)
+            let maybeScope = scopeNode(maybeParentNode)
             if (maybeScope) {
                 return maybeScope
             }
@@ -38,8 +30,8 @@ class BaseNode<T> {
         return this.nodeRef.to
     }
 
-    get text(): string {
-        return this.doc.sliceString(this.from, this.to)
+    textIn(doc: Text): string {
+        return doc.sliceString(this.from, this.to)
     }
 }
 
@@ -54,8 +46,8 @@ export class ScopeType {
         this.usePaths = usePaths
     }
 
-    of(ref: SyntaxNodeRef, doc: Text): ScopeNode {
-        return new ScopeNode(this, ref, doc)
+    of(ref: SyntaxNodeRef): ScopeNode {
+        return new ScopeNode(this, ref)
     }
 
     toString(): string {
@@ -65,32 +57,32 @@ export class ScopeType {
 
 export class ScopeNode extends BaseNode<ScopeType> {
 
-    constructor(type: ScopeType, ref: SyntaxNodeRef, doc: Text) {
-        super(type, ref, doc)
+    constructor(type: ScopeType, ref: SyntaxNodeRef) {
+        super(type, ref)
     }
 
-    get uses(): readonly UseNode[] {
-        return searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef, this.doc), nestedScope => nestedScope.undefinedUses)
+    uses(doc: Text): readonly UseNode[] {
+        return searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
     }
 
-    get undefinedUses(): readonly UseNode[] {
-        let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef, this.doc), nestedScope => nestedScope.undefinedUses)
-        let definitions = Map.groupBy(this.definitions, definition => definition.text)
-        return undefinedUses.filter(use => !definitions.has(use.text))
+    undefinedUses(doc: Text): readonly UseNode[] {
+        let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
+        let definitions = Map.groupBy(this.definitions, definition => definition.textIn(doc))
+        return undefinedUses.filter(use => !definitions.has(use.textIn(doc)))
     }
 
     get definitions(): readonly DefinitionNode[] {
-        return searchTree(this.nodeRef, this.type.definitionPaths, nodeRef => definitionNode(nodeRef, this.doc), nestedScope => [])
+        return searchTree(this.nodeRef, this.type.definitionPaths, nodeRef => definitionNode(nodeRef), nestedScope => [])
     }
 
-    matchingDefinitions(use: UseNode): readonly DefinitionNode[] {
-        let text = use.text
-        return searchParentScopes(this, scope => scope.definitions.filter(d => d.text === text))
+    matchingDefinitions(use: UseNode, doc: Text): readonly DefinitionNode[] {
+        let text = use.textIn(doc)
+        return searchParentScopes(this, scope => scope.definitions.filter(d => d.textIn(doc) === text))
     }
 
-    matchingUses(definition: DefinitionNode): readonly UseNode[] {
-        let text = definition.text
-        return searchParentScopes(this, scope => scope.uses.filter(d => d.text === text))
+    matchingUses(definition: DefinitionNode, doc: Text): readonly UseNode[] {
+        let text = definition.textIn(doc)
+        return searchParentScopes(this, scope => scope.uses(doc).filter(d => d.textIn(doc) === text))
     }
 }
 
@@ -101,8 +93,8 @@ export class UseType {
         this.namespace = namespace
     }
 
-    of(ref: SyntaxNodeRef, doc: Text): UseNode {
-        return new UseNode(this, ref, doc)
+    of(ref: SyntaxNodeRef): UseNode {
+        return new UseNode(this, ref)
     }
 
     toString(): string {
@@ -112,13 +104,12 @@ export class UseType {
 
 export class UseNode extends BaseNode<UseType> {
 
-    constructor(type: UseType, ref: SyntaxNodeRef, doc: Text) {
-        super(type, ref, doc)
+    constructor(type: UseType, ref: SyntaxNodeRef) {
+        super(type, ref)
     }
 
-    get matchingDefinitions(): readonly DefinitionNode[] {
-        // TODO try parent scopes if not found in the first one
-        return this.scope?.matchingDefinitions(this) ?? []
+    matchingDefinitions(doc: Text): readonly DefinitionNode[] {
+        return this.scope?.matchingDefinitions(this, doc) ?? []
     }
 }
 
@@ -131,8 +122,8 @@ export class DefinitionType {
         this.rules = rules
     }
 
-    of(ref: SyntaxNodeRef, doc: Text): DefinitionNode {
-        return new DefinitionNode(this, ref, doc)
+    of(ref: SyntaxNodeRef): DefinitionNode {
+        return new DefinitionNode(this, ref)
     }
 
     toString(): string {
@@ -142,18 +133,12 @@ export class DefinitionType {
 
 export class DefinitionNode extends BaseNode<DefinitionType> {
 
-    constructor(type: DefinitionType, ref: SyntaxNodeRef, doc: Text) {
-        super(type, ref, doc)
+    constructor(type: DefinitionType, ref: SyntaxNodeRef) {
+        super(type, ref)
     }
 
-    // All the document ranges in which this definition is in scope
-    get allInScopeRanges(): readonly Range[] {
-        return []
-    }
-
-    get matchingUses(): readonly UseNode[] {
-        // TODO try parent scopes if not found in the first one
-        return this.scope?.matchingUses(this) ?? []
+    matchingUses(doc: Text): readonly UseNode[] {
+        return this.scope?.matchingUses(this, doc) ?? []
     }
 }
 

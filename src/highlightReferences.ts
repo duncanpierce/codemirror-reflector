@@ -22,7 +22,7 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
     if (config.definitions ?? true) {
         let use = cursorNode(config.afterCursor ?? true, state, useNode)
         if (use) {
-            let matches = use.matchingDefinitions
+            let matches = use.matchingDefinitions(state.doc)
             matches.forEach(def => {
                 widgets.push(Decoration.mark(definitionMark).range(def.from, def.to))
             })
@@ -36,7 +36,7 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
     if (config.uses ?? true) {
         let definition = cursorNode(config.afterCursor ?? true, state, definitionNode)
         if (definition) {
-            let matches = definition.matchingUses
+            let matches = definition.matchingUses(state.doc)
             matches.forEach(use => {
                 widgets.push(Decoration.mark(useMark).range(use.from, use.to))
             })

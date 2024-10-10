@@ -36,14 +36,14 @@ function createWidgets(view: EditorView): DecorationSet {
         syntaxTree(view.state).iterate({
             from, to,
             enter: ref => {
-                if (scopeNode(ref, view.state.doc)) {
+                if (scopeNode(ref)) {
                     widgets.push(ScopeWidget.create("[", ref.from))
                 }
-                if (useNode(ref, view.state.doc)) {
+                if (useNode(ref)) {
                     let widget = Decoration.mark(useMark).range(ref.from, ref.to)
                     widgets.push(widget)
                 }
-                if (definitionNode(ref, view.state.doc)) {
+                if (definitionNode(ref)) {
                     let widget = Decoration.mark(definitionMark).range(ref.from, ref.to)
                     widgets.push(widget)
                 }

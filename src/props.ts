@@ -38,14 +38,14 @@ function parseKeyValues(str: string): Map<string, readonly string[]> {
     )
 }
 
-export function scopeNode(ref: SyntaxNodeRef, doc: Text): ScopeNode | undefined {
-    return ref.type.prop(scope)?.of(ref, doc)
+export function scopeNode(ref: SyntaxNodeRef): ScopeNode | undefined {
+    return ref.type.prop(scope)?.of(ref)
 }
 
-export function useNode(ref: SyntaxNodeRef, doc: Text): UseNode | undefined {
-    return ref.type.prop(use)?.of(ref, doc)
+export function useNode(ref: SyntaxNodeRef): UseNode | undefined {
+    return ref.type.prop(use)?.of(ref)
 }
 
-export function definitionNode(ref: SyntaxNodeRef, doc: Text): DefinitionNode | undefined {
-    return ref.type.prop(definition)?.of(ref, doc)
+export function definitionNode(ref: SyntaxNodeRef): DefinitionNode | undefined {
+    return ref.type.prop(definition)?.of(ref)
 }
