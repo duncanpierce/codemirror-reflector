@@ -12,7 +12,7 @@ export const parser = LRParser.deserialize({
   nodeProps: [
     [scope, -2,2,6,""],
     [structure, -3,3,10,27,""],
-    [definition, -4,5,8,13,28,""],
+    [definition, -3,5,8,28,"",13,"redefines"],
     [use, -2,15,23,""]
   ],
   skippedNodes: [0,1],

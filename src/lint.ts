@@ -52,7 +52,7 @@ export const multipleDefinitions = (...actions: readonly Action[]) => (c: Diagno
     let definitionNode = c.definitionNode
     if (definitionNode) {
         let scope = definitionNode.scope
-        if (scope && scope.definitionsByText(c.doc).get(c.text)!.length > 1) {
+        if (scope && scope.definitionsByName(c.doc).get(c.text)!.length > 1) {
             c.error(`'${c.text}' is defined more than once`, actions)
         }
     }

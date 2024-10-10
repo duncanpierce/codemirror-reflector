@@ -23,6 +23,7 @@ let startingDoc =
 func bar(a, b) {
     var c;
     c = a * b;
+    c = c * 2;
     var c; # redeclare c
     c = a / b;
     var d;
@@ -60,7 +61,7 @@ let editorView = new EditorView({
                 ...historyKeymap,
                 indentWithTab,
             ]),
-            treeView(document.querySelector('#debug')!),
+            // treeView(document.querySelector('#debug')!),
             // highlightProps,
             highlightReferences(),
 

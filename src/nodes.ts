@@ -32,6 +32,14 @@ class BaseNode<T> {
     textIn(doc: Text): string {
         return doc.sliceString(this.from, this.to)
     }
+
+    before(other: Range) {
+        return this.to <= other.from
+    }
+
+    after(other: Range) {
+        return this.from >= other.to
+    }
 }
 
 export class ScopeType {
@@ -57,7 +65,7 @@ export class ScopeNode extends BaseNode<ScopeType> {
 
     undefinedUses(doc: Text): readonly UseNode[] {
         let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
-        let definitions = this.definitionsByText(doc)
+        let definitions = this.definitionsByName(doc)
         return undefinedUses.filter(use => !definitions.has(use.textIn(doc)))
     }
 
@@ -65,19 +73,27 @@ export class ScopeNode extends BaseNode<ScopeType> {
         return searchTree(this.nodeRef, this.type.definitionPaths, nodeRef => definitionNode(nodeRef), nestedScope => [])
     }
 
-    definitionsByText(doc: Text): Map<string, readonly DefinitionNode[]> {
+    definitionsByName(doc: Text): Map<string, readonly DefinitionNode[]> {
         return Map.groupBy(this.definitions, definition => definition.textIn(doc))
     }
 
     matchingDefinitions(use: UseNode, doc: Text): readonly DefinitionNode[] {
-        let text = use.textIn(doc)
-        return searchParentScopes(this, scope => scope.definitions.filter(d => d.textIn(doc) === text))
+        return searchParentScopes(this, scope => {
+            let relevantDefinitions = scope.definitions.filter(sameName(doc, use))
+            return relevantDefinitions.filter(definition => definition.withinScope(use, relevantDefinitions))
+        })
     }
 
     matchingUses(definition: DefinitionNode, doc: Text): readonly UseNode[] {
-        let text = definition.textIn(doc)
-        return searchParentScopes(this, scope => scope.uses(doc).filter(d => d.textIn(doc) === text))
+        return searchParentScopes(this, scope => {
+            let relevantDefinitions = scope.definitions.filter(sameName(doc, definition))
+            return scope.uses(doc).filter(sameName(doc, definition)).filter(use => definition.withinScope(use, relevantDefinitions))
+        })
     }
+}
+
+const sameName = (doc: Text, a: Range) => (b: Range): boolean => {
+    return doc.sliceString(a.from, a.to) == doc.sliceString(b.from, b.to)
 }
 
 export class UseType {
@@ -101,7 +117,7 @@ export class UseNode extends BaseNode<UseType> {
 export class DefinitionType {
     constructor(
         readonly namespace: string,
-        readonly rules: readonly string[]
+        readonly redefines: boolean
     ) { }
 
     of(ref: SyntaxNodeRef): DefinitionNode {
@@ -109,13 +125,21 @@ export class DefinitionType {
     }
 
     toString(): string {
-        return `namespace:${this.namespace} rules:${this.rules.join(" ")}`
+        return `namespace:${this.namespace} redefines:${this.redefines}`
     }
 }
 
 export class DefinitionNode extends BaseNode<DefinitionType> {
     matchingUses(doc: Text): readonly UseNode[] {
         return this.scope?.matchingUses(this, doc) ?? []
+    }
+
+    withinScope(use: UseNode, peers: readonly DefinitionNode[]): boolean {
+        if (!this.type.redefines) return true
+        if (use.before(this)) return false
+        let nextRedefinition = peers.find(definition => definition.after(this))
+        if (nextRedefinition) return use.before(nextRedefinition)
+        return true
     }
 }
 
@@ -131,7 +155,7 @@ export class StructureType {
 
 export class StructureNode extends BaseNode<StructureType> { }
 
-export class Range {
-    constructor(readonly from: number, readonly to: number) { }
+export interface Range {
+    readonly from: number,
+    readonly to: number
 }
-

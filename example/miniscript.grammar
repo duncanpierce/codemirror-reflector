@@ -19,7 +19,7 @@ Statement[structure] { (LocalVariableDeclaration | Assignment | FunctionCall | R
 GlobalVariableDefinition[definition] { identifier }
 FunctionDefinition[definition] { identifier }
 ParameterDefinition[definition] { identifier }
-LocalVariableDefinition[definition] { identifier }
+LocalVariableDefinition[definition="redefines"] { identifier }
 
 // Mark each use of a function or variable
 VariableUse[use] { identifier }

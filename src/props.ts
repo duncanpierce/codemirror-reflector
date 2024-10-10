@@ -18,7 +18,7 @@ export const definition = new NodeProp<DefinitionType>({
         let kv = parseKeyValues(str)
         return new DefinitionType(
             (kv.get("namespace") || ["identifier"])[0],
-            kv.get("rules") ?? []
+            kv.has("redefines")
         )
     }
 })
