@@ -1,14 +1,15 @@
 import { drawSelection, EditorView, keymap } from "@codemirror/view"
 import { EditorState } from "@codemirror/state"
 import { autocompletion, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete"
-import { defaultKeymap, indentWithTab } from "@codemirror/commands"
+import { defaultKeymap, historyKeymap, indentWithTab } from "@codemirror/commands"
 import { lintGutter, lintKeymap } from "@codemirror/lint"
 import { defaultHighlightStyle, indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language"
 import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightReferences } from "../src/highlightReferences"
-import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext } from "../src/lint"
+import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following } from "../src/lint"
+import { history } from "@codemirror/commands"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -32,6 +33,7 @@ func bar(a, b) {
 var x;
 
 func baz(n) {
+    var z; # unused variable
     return n * 2 + x;
 }
 `
@@ -42,6 +44,7 @@ let editorView = new EditorView({
         doc: startingDoc,
         extensions: [
             miniscript(),
+            history(),
             lintGutter(),
             drawSelection(), // include this to allow Reflector to show multiple selections; TODO include in Reflector extension
             EditorState.allowMultipleSelections.of(true), // TODO include in Reflector extension
@@ -54,6 +57,7 @@ let editorView = new EditorView({
                 ...defaultKeymap,
                 ...completionKeymap,
                 ...lintKeymap,
+                ...historyKeymap,
                 indentWithTab,
             ]),
             treeView(document.querySelector('#debug')!),
@@ -67,10 +71,17 @@ let editorView = new EditorView({
                     matchContext(["FunctionScope"], error("Braces and function body required")),
                     error("Syntax error"),
                 ),
-                allNodes: all(unusedDefinition, undefinedUse, multipleDefinitions),
+                allNodes: all(unusedDefinition(), undefinedUse(), multipleDefinitions()),
                 nodeTypes: {
-                    Comment: hint("Comments are ignored"),
+                    Comment: following("VariableDeclaration", hint(
+                        "Commenting variable declarations is discouraged",
+                        remove("Comment", "Remove comment"),
+                        remove("FunctionDeclaration", "Remove whole function"),
+                    )),
                     // TODO it would be nice to be able to define an Alt-Enter action/command without having to create a Diagnostic
+
+                    FunctionDefinition: unusedDefinition(remove("FunctionDeclaration", "Remove function")),
+                    LocalVariableDefinition: unusedDefinition(remove("VariableDeclaration", "Remove variable")),
                 }
             })
         ],

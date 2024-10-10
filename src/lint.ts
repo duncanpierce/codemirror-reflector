@@ -5,6 +5,7 @@ import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { DefinitionNode, ScopeNode, UseNode } from "./nodes"
 import { definitionNode, scopeNode, useNode } from "./props"
+import { findClosestNode } from "./searchTree"
 
 export const lintStructure = (spec: LintSpec) => linter((view: EditorView): readonly Diagnostic[] => {
     let diagnostics: Diagnostic[] = []
@@ -29,30 +30,30 @@ export const lintStructure = (spec: LintSpec) => linter((view: EditorView): read
     return diagnostics
 })
 
-export function unusedDefinition(c: DiagnosticContext) {
+export const unusedDefinition = (...actions: readonly Action[]) => (c: DiagnosticContext) => {
     let definitionNode = c.definitionNode
     if (definitionNode) {
         if (definitionNode.matchingUses(c.doc).length === 0) {
-            c.hint(`'${c.text}' is never used`)
+            c.hint(`'${c.text}' is never used`, actions)
         }
     }
 }
 
-export function undefinedUse(c: DiagnosticContext) {
+export const undefinedUse = (...actions: readonly Action[]) => (c: DiagnosticContext) => {
     let useNode = c.useNode
     if (useNode) {
         if (useNode.matchingDefinitions(c.doc).length === 0) {
-            c.error(`'${c.text}' has not been defined`)
+            c.error(`'${c.text}' has not been defined`, actions)
         }
     }
 }
 
-export function multipleDefinitions(c: DiagnosticContext) {
+export const multipleDefinitions = (...actions: readonly Action[]) =>  (c: DiagnosticContext) => {
     let definitionNode = c.definitionNode
     if (definitionNode) {
         let scope = definitionNode.scope
         if (scope && scope.definitionsByText(c.doc).get(c.text)!.length > 1) {
-            c.error(`'${c.text}' is defined more than once`)
+            c.error(`'${c.text}' is defined more than once`, actions)
         }
     }
 }
@@ -81,6 +82,12 @@ export const matchContext = (context: readonly string[], lint: NodeLinter) => (c
     }
 }
 
+export const following = (nodeType: string, lint: NodeLinter) => (c: DiagnosticContext) => {
+    if (c.nodeRef.node.prevSibling?.type.is(nodeType)) {
+        lint(c)
+    }
+}
+
 export const first = (...linters: readonly NodeLinter[]) => stepThrough(c => c.hasDiagnostics, ...linters)
 export const all = (...linters: readonly NodeLinter[]) => stepThrough(c => false, ...linters)
 
@@ -88,6 +95,17 @@ export const stepThrough = (stop: (c: DiagnosticContext) => boolean, ...linters:
     for (let lint of linters) {
         lint(c)
         if (stop(c)) return
+    }
+}
+
+export function remove(nodeType: string, name: string): Action {
+    return {
+        name,
+        apply: function (view: EditorView, from: number, to: number): void {
+            let tree = syntaxTree(view.state)
+            let node = findClosestNode(nodeType, tree.resolve(from, 1))
+            if (node) view.dispatch(view.state.update({ changes: { from: node.from, to: node.to, insert: "" } }))
+        }
     }
 }
 

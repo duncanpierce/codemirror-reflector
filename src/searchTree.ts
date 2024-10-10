@@ -50,3 +50,14 @@ export function allChildren(node: SyntaxNode): readonly SyntaxNode[] {
     }
     return children
 }
+
+export function findClosestNode(nodeType: string, nodeRef: SyntaxNodeRef): SyntaxNode | null {
+    let search: SyntaxNode | null = nodeRef.node
+    while (search) {
+        if (search.type.name === nodeType) {
+            return search
+        }
+        search = search.parent
+    }
+    return null
+}
