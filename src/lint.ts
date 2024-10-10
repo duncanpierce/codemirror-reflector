@@ -33,7 +33,7 @@ export function unusedDefinition(c: DiagnosticContext) {
     let definitionNode = c.definitionNode
     if (definitionNode) {
         if (definitionNode.matchingUses(c.doc).length === 0) {
-            c.info(`'${c.text}' is never used`)
+            c.hint(`'${c.text}' is never used`)
         }
     }
 }
@@ -55,6 +55,22 @@ export function multipleDefinitions(c: DiagnosticContext) {
             c.error(`'${c.text}' is defined more than once`)
         }
     }
+}
+
+export const error = (message: string) => (c: DiagnosticContext) => {
+    c.error(message)
+}
+
+export const warning = (message: string) => (c: DiagnosticContext) => {
+    c.warning(message)
+}
+
+export const info = (message: string) => (c: DiagnosticContext) => {
+    c.info(message)
+}
+
+export const hint = (message: string) => (c: DiagnosticContext) => {
+    c.hint(message)
 }
 
 export type Severity = "hint" | "info" | "warning" | "error"

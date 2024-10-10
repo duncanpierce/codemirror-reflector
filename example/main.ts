@@ -8,7 +8,7 @@ import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightReferences } from "../src/highlightReferences"
-import { lintStructure, multipleDefinitions, undefinedUse, unusedDefinition } from "../src/lint"
+import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition } from "../src/lint"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -60,7 +60,11 @@ let editorView = new EditorView({
             // highlightProps,
             highlightReferences(),
             lintStructure({
+                errorNodes: [{linters: [error("Syntax error")]}],
                 allNodes: [{linters: [unusedDefinition, undefinedUse, multipleDefinitions]}],
+                nodeTypes: {
+                    Comment: [{linters: [hint("Comments are discouraged")]}],
+                }
             })
         ],
     }),
