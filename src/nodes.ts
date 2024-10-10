@@ -1,8 +1,7 @@
 import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
-import { definition, definitionNode, scopeNode, useNode } from "./props"
+import { definitionNode, scopeNode, useNode } from "./props"
 import { searchParentScopes, searchTree } from "./searchTree"
-
 
 class BaseNode<T> {
     constructor(readonly type: T, readonly nodeRef: SyntaxNodeRef) {}
@@ -36,15 +35,11 @@ class BaseNode<T> {
 }
 
 export class ScopeType {
-    readonly namespace: readonly string[]
-    readonly definitionPaths: readonly string[] | undefined
-    readonly usePaths: readonly string[] | undefined
-
-    constructor(namespace: readonly string[], definitionPaths: readonly string[] | undefined, usePaths: readonly string[] | undefined) {
-        this.namespace = namespace
-        this.definitionPaths = definitionPaths
-        this.usePaths = usePaths
-    }
+    constructor(
+        readonly namespace: readonly string[],
+        readonly definitionPaths: readonly string[] | undefined,
+        readonly usePaths: readonly string[] | undefined
+    ) {}
 
     of(ref: SyntaxNodeRef): ScopeNode {
         return new ScopeNode(this, ref)
@@ -56,11 +51,6 @@ export class ScopeType {
 }
 
 export class ScopeNode extends BaseNode<ScopeType> {
-
-    constructor(type: ScopeType, ref: SyntaxNodeRef) {
-        super(type, ref)
-    }
-
     uses(doc: Text): readonly UseNode[] {
         return searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
     }
@@ -87,11 +77,7 @@ export class ScopeNode extends BaseNode<ScopeType> {
 }
 
 export class UseType {
-    private namespace: string
-
-    constructor(namespace: string) {
-        this.namespace = namespace
-    }
+    constructor(readonly namespace: string) {}
 
     of(ref: SyntaxNodeRef): UseNode {
         return new UseNode(this, ref)
@@ -103,24 +89,16 @@ export class UseType {
 }
 
 export class UseNode extends BaseNode<UseType> {
-
-    constructor(type: UseType, ref: SyntaxNodeRef) {
-        super(type, ref)
-    }
-
     matchingDefinitions(doc: Text): readonly DefinitionNode[] {
         return this.scope?.matchingDefinitions(this, doc) ?? []
     }
 }
 
 export class DefinitionType {
-    readonly namespace: string
-    readonly rules: readonly string[]
-
-    constructor(namespace: string, rules: readonly string[]) {
-        this.namespace = namespace
-        this.rules = rules
-    }
+    constructor(
+        readonly namespace: string,
+        readonly rules: readonly string[]
+    ) {}
 
     of(ref: SyntaxNodeRef): DefinitionNode {
         return new DefinitionNode(this, ref)
@@ -132,23 +110,12 @@ export class DefinitionType {
 }
 
 export class DefinitionNode extends BaseNode<DefinitionType> {
-
-    constructor(type: DefinitionType, ref: SyntaxNodeRef) {
-        super(type, ref)
-    }
-
     matchingUses(doc: Text): readonly UseNode[] {
         return this.scope?.matchingUses(this, doc) ?? []
     }
 }
 
 export class Range {
-    readonly from: number
-    readonly to: number
-
-    constructor(from: number, to: number) {
-        this.from = from
-        this.to = to
-    }
+    constructor(readonly from: number, readonly to: number) {}
 }
 

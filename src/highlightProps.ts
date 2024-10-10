@@ -60,11 +60,8 @@ function createWidgets(view: EditorView): DecorationSet {
 }
 
 class ScopeWidget extends WidgetType {
-    private text: string
-
-    constructor(text: string) {
+    constructor(private text: string) {
         super()
-        this.text = text
     }
 
     toDOM(view: EditorView): HTMLElement {
