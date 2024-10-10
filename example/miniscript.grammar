@@ -1,25 +1,22 @@
 // https://lezer.codemirror.net/docs/guide/
 
-// These are the extra things we need to add for Reflector to work
-
+// Import props needed to define scopes, definitions and uses
 @external prop scope from "../src/props"
 @external prop definition from "../src/props"
 @external prop use from "../src/props"
 
+// Mark each node which defines a new scope - FunctionDeclaration has FunctionDefinition outside the new scope and its parameters inside
 @top Program[scope] { declaration* }
+FunctionDeclaration { Function FunctionDefinition FunctionScope[scope] { FormalParameters "{" FunctionBody "}" } }
 
+// Mark each definition of a function or variable
 GlobalVariableDefinition[definition] { identifier }
-
-FunctionDeclaration { Function FunctionDefinition FunctionScope[scope] { FormalParameters "{" FunctionBody "}" }}
-
 FunctionDefinition[definition] { identifier }
-
 ParameterDefinition[definition] { identifier }
-
 LocalVariableDefinition[definition] { identifier }
 
+// Mark each use of a function or variable
 VariableUse[use] { identifier }
-
 FunctionUse[use] { identifier }
 
 // End of extra things for Reflector - everything below is ordinary grammar
@@ -56,7 +53,7 @@ VariableDeclaration { Var LocalVariableDefinition }
 FunctionBody { statement* }
 statement { (VariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
-FormalParameters { list<LocalVariableDefinition> }
+FormalParameters { list<ParameterDefinition> }
 ActualParameters { list<Expression> }
 ReturnStatement { Return Expression }
 Assignment { VariableUse "=" Expression }
