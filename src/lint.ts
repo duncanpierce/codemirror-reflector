@@ -29,25 +29,32 @@ export const lintStructure = (spec: LintSpec) => linter((view: EditorView): read
     return diagnostics
 })
 
-export function unusedDefinition(item: DiagnosticContext) {
-    let definitionNode = item.definitionNode
+export function unusedDefinition(c: DiagnosticContext) {
+    let definitionNode = c.definitionNode
     if (definitionNode) {
-        if (definitionNode.matchingUses(item.doc).length === 0) {
-            item.info(`'${item.text}' is never used`)
+        if (definitionNode.matchingUses(c.doc).length === 0) {
+            c.info(`'${c.text}' is never used`)
         }
     }
 }
 
-export function undefinedUse(item: DiagnosticContext) {
-    let useNode = item.useNode
+export function undefinedUse(c: DiagnosticContext) {
+    let useNode = c.useNode
     if (useNode) {
-        if (useNode.matchingDefinitions(item.doc).length === 0) {
-            item.error(`'${item.text}' has not been defined`)
+        if (useNode.matchingDefinitions(c.doc).length === 0) {
+            c.error(`'${c.text}' has not been defined`)
         }
     }
 }
 
-export function multipleDefinitions(item: DiagnosticContext) {
+export function multipleDefinitions(c: DiagnosticContext) {
+    let definitionNode = c.definitionNode
+    if (definitionNode) {
+        let scope = definitionNode.scope
+        if (scope && scope.definitionsByText(c.doc).get(c.text)!.length > 1) {
+            c.error(`'${c.text}' is defined more than once`)
+        }
+    }
 }
 
 export type Severity = "hint" | "info" | "warning" | "error"

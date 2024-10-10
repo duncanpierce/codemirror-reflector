@@ -26,7 +26,7 @@ FunctionUse[use] { identifier }
 @tokens {
     space { $[ \t\n\r]+ }
     Comment { "#" ![\n]* }
-    identifier { $[a-zA-Z]+ }
+    identifier { $[a-zA-Z] $[a-zA-Z0-9]* }
     Number { $[0-9]+ }
     String { '"' ![\n"] '"' }
 }

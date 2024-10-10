@@ -57,12 +57,16 @@ export class ScopeNode extends BaseNode<ScopeType> {
 
     undefinedUses(doc: Text): readonly UseNode[] {
         let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
-        let definitions = Map.groupBy(this.definitions, definition => definition.textIn(doc))
+        let definitions = this.definitionsByText(doc)
         return undefinedUses.filter(use => !definitions.has(use.textIn(doc)))
     }
 
     get definitions(): readonly DefinitionNode[] {
         return searchTree(this.nodeRef, this.type.definitionPaths, nodeRef => definitionNode(nodeRef), nestedScope => [])
+    }
+
+    definitionsByText(doc: Text): Map<string, readonly DefinitionNode[]> {
+        return Map.groupBy(this.definitions, definition => definition.textIn(doc))
     }
 
     matchingDefinitions(use: UseNode, doc: Text): readonly DefinitionNode[] {
