@@ -5,7 +5,7 @@ import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { DefinitionNode, ScopeNode, UseNode } from "./nodes"
 import { definitionNode, scopeNode, useNode } from "./props"
-import { findClosestNode } from "./searchTree"
+import { findEnclosingNodeOfType, findEnclosingStructure } from "./searchTree"
 
 export const lintStructure = (spec: LintSpec) => linter((view: EditorView): readonly Diagnostic[] => {
     let diagnostics: Diagnostic[] = []
@@ -48,7 +48,7 @@ export const undefinedUse = (...actions: readonly Action[]) => (c: DiagnosticCon
     }
 }
 
-export const multipleDefinitions = (...actions: readonly Action[]) =>  (c: DiagnosticContext) => {
+export const multipleDefinitions = (...actions: readonly Action[]) => (c: DiagnosticContext) => {
     let definitionNode = c.definitionNode
     if (definitionNode) {
         let scope = definitionNode.scope
@@ -103,9 +103,18 @@ export function remove(nodeType: string, name: string): Action {
         name,
         apply: function (view: EditorView, from: number, to: number): void {
             let tree = syntaxTree(view.state)
-            let node = findClosestNode(nodeType, tree.resolve(from, 1))
+            let node = findEnclosingNodeOfType(nodeType, tree.resolve(from, 1))
             if (node) view.dispatch(view.state.update({ changes: { from: node.from, to: node.to, insert: "" } }))
         }
+    }
+}
+
+export const removeStructure: Action = {
+    name: "Remove",
+    apply: function (view: EditorView, from: number, to: number): void {
+        let tree = syntaxTree(view.state)
+        let node = findEnclosingStructure(tree.resolve(from, 1))
+        if (node) view.dispatch(view.state.update({ changes: { from: node.from, to: node.to, insert: "" } }))
     }
 }
 

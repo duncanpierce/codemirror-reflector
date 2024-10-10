@@ -1,5 +1,5 @@
 import { NodeProp, SyntaxNode, SyntaxNodeRef } from '@lezer/common'
-import { DefinitionNode, DefinitionType, ScopeNode, ScopeType, UseNode, UseType } from './nodes'
+import { DefinitionNode, DefinitionType, ScopeNode, ScopeType, StructureNode, StructureType, UseNode, UseType } from './nodes'
 import { Text } from "@codemirror/state"
 
 export const scope = new NodeProp<ScopeType>({
@@ -30,6 +30,13 @@ export const use = new NodeProp<UseType>({
     }
 })
 
+export const structure = new NodeProp<StructureType>({
+    deserialize(str) {
+        return new StructureType()
+    }
+})
+
+
 // Parse key->value[] map from e.g. "k1:v1 v2,k2:v1 v2 v3"
 function parseKeyValues(str: string): Map<string, readonly string[]> {
     return new Map(str.split(",")
@@ -48,4 +55,8 @@ export function useNode(ref: SyntaxNodeRef): UseNode | undefined {
 
 export function definitionNode(ref: SyntaxNodeRef): DefinitionNode | undefined {
     return ref.type.prop(definition)?.of(ref)
+}
+
+export function structureNode(ref: SyntaxNodeRef): StructureNode | undefined {
+    return ref.type.prop(structure)?.of(ref)
 }

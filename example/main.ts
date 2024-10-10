@@ -8,7 +8,7 @@ import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightReferences } from "../src/highlightReferences"
-import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following } from "../src/lint"
+import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, removeStructure } from "../src/lint"
 import { history } from "@codemirror/commands"
 
 const editorElement = document.querySelector('#editor')!
@@ -71,17 +71,16 @@ let editorView = new EditorView({
                     matchContext(["FunctionScope"], error("Braces and function body required")),
                     error("Syntax error"),
                 ),
-                allNodes: all(unusedDefinition(), undefinedUse(), multipleDefinitions()),
+                allNodes: all(
+                    unusedDefinition(removeStructure), 
+                    undefinedUse(), 
+                    multipleDefinitions()
+                ),
                 nodeTypes: {
-                    Comment: following("VariableDeclaration", hint(
-                        "Commenting variable declarations is discouraged",
-                        remove("Comment", "Remove comment"),
-                        remove("FunctionDeclaration", "Remove whole function"),
+                    Comment: following("Statement", hint(
+                        "Commenting statements is discouraged",
                     )),
                     // TODO it would be nice to be able to define an Alt-Enter action/command without having to create a Diagnostic
-
-                    FunctionDefinition: unusedDefinition(remove("FunctionDeclaration", "Remove function")),
-                    LocalVariableDefinition: unusedDefinition(remove("VariableDeclaration", "Remove variable")),
                 }
             })
         ],

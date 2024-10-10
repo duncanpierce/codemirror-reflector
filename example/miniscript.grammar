@@ -4,10 +4,16 @@
 @external prop scope from "../src/props"
 @external prop definition from "../src/props"
 @external prop use from "../src/props"
+@external prop structure from "../src/props"
 
 // Mark each node which defines a new scope - FunctionDeclaration has FunctionDefinition outside the new scope and its parameters inside
 @top Program[scope] { declaration* }
-FunctionDeclaration { Function FunctionDefinition FunctionScope[scope] { FormalParameters "{" FunctionBody "}" } }
+FunctionScope[scope] { FormalParameters "{" FunctionBody "}" }
+
+// Mark structures - nodes that, if removed, maintain the validity of the syntax tree
+FunctionDeclaration[structure] { Function FunctionDefinition FunctionScope }
+GlobalVariableDeclaration[structure] { Var GlobalVariableDefinition ";" }
+Statement[structure] { (LocalVariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
 // Mark each definition of a function or variable
 GlobalVariableDefinition[definition] { identifier }
@@ -18,6 +24,7 @@ LocalVariableDefinition[definition] { identifier }
 // Mark each use of a function or variable
 VariableUse[use] { identifier }
 FunctionUse[use] { identifier }
+
 
 // End of extra things for Reflector - everything below is ordinary grammar
 
@@ -45,18 +52,16 @@ Return { @specialize<identifier,"return"> }
 
 declaration {
     FunctionDeclaration |
-    (GlobalVariableDeclaration ";")
+    GlobalVariableDeclaration
 }
 
-GlobalVariableDeclaration { Var GlobalVariableDefinition }
-VariableDeclaration { Var LocalVariableDefinition }
-FunctionBody { statement* }
-statement { (VariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
+FunctionBody { Statement* }
 
 FormalParameters { list<ParameterDefinition> }
 ActualParameters { list<Expression> }
 ReturnStatement { Return Expression }
 Assignment { VariableUse "=" Expression }
+LocalVariableDeclaration { Var LocalVariableDefinition }
 
 Expression {
     Number |

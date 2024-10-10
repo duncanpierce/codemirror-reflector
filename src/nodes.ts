@@ -4,7 +4,7 @@ import { definitionNode, scopeNode, useNode } from "./props"
 import { searchParentScopes, searchTree } from "./searchTree"
 
 class BaseNode<T> {
-    constructor(readonly type: T, readonly nodeRef: SyntaxNodeRef) {}
+    constructor(readonly type: T, readonly nodeRef: SyntaxNodeRef) { }
 
     get scope(): ScopeNode | null {
         let searchNode = this.nodeRef.node
@@ -39,7 +39,7 @@ export class ScopeType {
         readonly namespace: readonly string[],
         readonly definitionPaths: readonly string[] | undefined,
         readonly usePaths: readonly string[] | undefined
-    ) {}
+    ) { }
 
     of(ref: SyntaxNodeRef): ScopeNode {
         return new ScopeNode(this, ref)
@@ -81,7 +81,7 @@ export class ScopeNode extends BaseNode<ScopeType> {
 }
 
 export class UseType {
-    constructor(readonly namespace: string) {}
+    constructor(readonly namespace: string) { }
 
     of(ref: SyntaxNodeRef): UseNode {
         return new UseNode(this, ref)
@@ -102,7 +102,7 @@ export class DefinitionType {
     constructor(
         readonly namespace: string,
         readonly rules: readonly string[]
-    ) {}
+    ) { }
 
     of(ref: SyntaxNodeRef): DefinitionNode {
         return new DefinitionNode(this, ref)
@@ -119,7 +119,19 @@ export class DefinitionNode extends BaseNode<DefinitionType> {
     }
 }
 
+export class StructureType {
+    of(ref: SyntaxNodeRef): StructureNode {
+        return new StructureNode(this, ref)
+    }
+
+    toString(): string {
+        return "structure"
+    }
+}
+
+export class StructureNode extends BaseNode<StructureType> { }
+
 export class Range {
-    constructor(readonly from: number, readonly to: number) {}
+    constructor(readonly from: number, readonly to: number) { }
 }
 
