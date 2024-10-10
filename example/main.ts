@@ -8,6 +8,7 @@ import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightReferences } from "../src/highlightReferences"
+import { lintStructure, unusedDefinition } from "../src/lint"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -57,7 +58,10 @@ let editorView = new EditorView({
             ]),
             // treeView(document.querySelector('#debug')!),
             // highlightProps,
-            highlightReferences()
+            highlightReferences(),
+            lintStructure({
+                allNodes: [{linters: [unusedDefinition]}],
+            })
         ],
     }),
 })
