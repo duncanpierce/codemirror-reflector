@@ -59,20 +59,20 @@ export function multipleDefinitions(c: DiagnosticContext) {
 
 export const alwaysOK = (c: DiagnosticContext) => { }
 
-export const error = (message: string) => (c: DiagnosticContext) => {
-    c.error(message)
+export const error = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+    c.error(message, actions)
 }
 
-export const warning = (message: string) => (c: DiagnosticContext) => {
-    c.warning(message)
+export const warning = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+    c.warning(message, actions)
 }
 
-export const info = (message: string) => (c: DiagnosticContext) => {
-    c.info(message)
+export const info = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+    c.info(message, actions)
 }
 
-export const hint = (message: string) => (c: DiagnosticContext) => {
-    c.hint(message)
+export const hint = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+    c.hint(message, actions)
 }
 
 export const matchContext = (context: readonly string[], lint: NodeLinter) => (c: DiagnosticContext) => {

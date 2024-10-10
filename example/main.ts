@@ -59,6 +59,8 @@ let editorView = new EditorView({
             treeView(document.querySelector('#debug')!),
             // highlightProps,
             highlightReferences(),
+
+            // TODO this structural information should be in languageData
             lintStructure({
                 errorNodes: first(
                     matchContext(["FunctionDeclaration"], error("Function name and parameters required")),
@@ -66,6 +68,10 @@ let editorView = new EditorView({
                     error("Syntax error"),
                 ),
                 allNodes: all(unusedDefinition, undefinedUse, multipleDefinitions),
+                nodeTypes: {
+                    Comment: hint("Comments are ignored"),
+                    // TODO it would be nice to be able to define an Alt-Enter action/command without having to create a Diagnostic
+                }
             })
         ],
     }),
