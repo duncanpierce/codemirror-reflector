@@ -8,7 +8,7 @@ import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightReferences } from "../src/highlightReferences"
-import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition } from "../src/lint"
+import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext } from "../src/lint"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -56,12 +56,16 @@ let editorView = new EditorView({
                 ...lintKeymap,
                 indentWithTab,
             ]),
-            // treeView(document.querySelector('#debug')!),
+            treeView(document.querySelector('#debug')!),
             // highlightProps,
             highlightReferences(),
             lintStructure({
-                errorNodes: [{ linters: [error("Syntax error")] }],
-                allNodes: [{ linters: [unusedDefinition, undefinedUse, multipleDefinitions] }],
+                errorNodes: first(
+                    matchContext(["FunctionDeclaration"], error("Function name and parameters required")),
+                    matchContext(["FunctionScope"], error("Braces and function body required")),
+                    error("Syntax error"),
+                ),
+                allNodes: all(unusedDefinition, undefinedUse, multipleDefinitions),
             })
         ],
     }),

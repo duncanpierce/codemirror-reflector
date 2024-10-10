@@ -8,21 +8,21 @@ import { definitionNode, scopeNode, useNode } from "./props"
 
 export const lintStructure = (spec: LintSpec) => linter((view: EditorView): readonly Diagnostic[] => {
     let diagnostics: Diagnostic[] = []
-    let nodeValidators = new Map<string, readonly NodeLintSpec[]>()
+    let nodeLinters = new Map<string, NodeLinter>()
     if (spec.nodeTypes) {
         for (let nodeName in spec.nodeTypes) {
-            nodeValidators.set(nodeName, spec.nodeTypes[nodeName])
+            nodeLinters.set(nodeName, spec.nodeTypes[nodeName])
         }
     }
 
     syntaxTree(view.state).iterate({
         enter: nodeRef => {
-            const specificLintSpecs = nodeRef.type.isError && spec.errorNodes ? spec.errorNodes : nodeValidators.get(nodeRef.type.name) ?? []
-            const generalLintSpecs = spec.allNodes ?? []
-            generalLintSpecs.concat(specificLintSpecs).forEach(lintSpec => {
-                if (lintSpec.linters && (!lintSpec.context || nodeRef.matchContext(lintSpec.context))) {
-                    lintSpec.linters.forEach(linter => linter(new DiagnosticContext(diagnostics, view.state.doc, nodeRef.node)))
-                }
+            const specificLinter = nodeRef.type.isError && spec.errorNodes ? spec.errorNodes : nodeLinters.get(nodeRef.type.name) ?? alwaysOK
+            const generalLinter = spec.allNodes ?? alwaysOK;
+            [specificLinter, generalLinter].forEach(lint => {
+                let c = new DiagnosticContext(view.state.doc, nodeRef.node)
+                lint(c)
+                diagnostics.push(...c.diagnostics)
             })
         }
     })
@@ -57,6 +57,8 @@ export function multipleDefinitions(c: DiagnosticContext) {
     }
 }
 
+export const alwaysOK = (c: DiagnosticContext) => { }
+
 export const error = (message: string) => (c: DiagnosticContext) => {
     c.error(message)
 }
@@ -73,11 +75,28 @@ export const hint = (message: string) => (c: DiagnosticContext) => {
     c.hint(message)
 }
 
+export const matchContext = (context: readonly string[], lint: NodeLinter) => (c: DiagnosticContext) => {
+    if (c.nodeRef.matchContext(context)) {
+        lint(c)
+    }
+}
+
+export const first = (...linters: readonly NodeLinter[]) => stepThrough(c => c.hasDiagnostics, ...linters)
+export const all = (...linters: readonly NodeLinter[]) => stepThrough(c => false, ...linters)
+
+export const stepThrough = (stop: (c: DiagnosticContext) => boolean, ...linters: readonly NodeLinter[]) => (c: DiagnosticContext) => {
+    for (let lint of linters) {
+        lint(c)
+        if (stop(c)) return
+    }
+}
+
 export type Severity = "hint" | "info" | "warning" | "error"
 
 export class DiagnosticContext {
+    private _diagnostics: Diagnostic[] = []
+
     constructor(
-        private diagnostics: Diagnostic[],
         readonly doc: Text,
         readonly nodeRef: SyntaxNodeRef,
     ) { }
@@ -93,13 +112,21 @@ export class DiagnosticContext {
     get useNode(): UseNode | undefined {
         return useNode(this.nodeRef)
     }
-    
+
     get definitionNode(): DefinitionNode | undefined {
         return definitionNode(this.nodeRef)
     }
-    
+
+    get diagnostics(): readonly Diagnostic[] {
+        return this._diagnostics
+    }
+
+    get hasDiagnostics(): boolean {
+        return this._diagnostics.length > 0
+    }
+
     diagnostic(severity: Severity, message: string, actions: readonly Action[] = []): void {
-        this.diagnostics.push({ from: this.nodeRef.from, to: this.nodeRef.to, message: message, severity: severity, actions: actions })
+        this._diagnostics.push({ from: this.nodeRef.from, to: this.nodeRef.to, message: message, severity: severity, actions: actions })
     }
 
     hint(message: string, actions: readonly Action[] = []): void {
@@ -117,18 +144,22 @@ export class DiagnosticContext {
     error(message: string, actions: readonly Action[] = []): void {
         this.diagnostic("error", message, actions)
     }
+
+    clearDiagnostics(): void {
+        this._diagnostics = []
+    }
 }
 
 export type NodeLinter = (item: DiagnosticContext) => void
 
 export interface LintSpec {
     readonly defaultSyntaxErrorMessage?: string
-    readonly allNodes?: readonly NodeLintSpec[],
-    readonly errorNodes?: readonly NodeLintSpec[],
-    readonly nodeTypes?: { [nodeType: string]: readonly NodeLintSpec[] }
+    readonly allNodes?: NodeLinter,
+    readonly errorNodes?: NodeLinter,
+    readonly nodeTypes?: { [nodeType: string]: NodeLinter }
 }
 
 export interface NodeLintSpec {
     readonly context?: readonly string[]
-    readonly linters?: readonly NodeLinter[]
+    readonly linter?: NodeLinter
 }
