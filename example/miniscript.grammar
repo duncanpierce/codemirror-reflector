@@ -1,9 +1,9 @@
 // https://lezer.codemirror.net/docs/guide/
 
 // Import props needed to define scopes, definitions and uses
-@external prop scope from "../src/props"
-@external prop definition from "../src/props"
-@external prop use from "../src/props"
+@external prop scope from "../src/scope"
+@external prop definition from "../src/definition"
+@external prop use from "../src/use"
 
 // Mark each node which defines a new scope - FunctionDeclaration has FunctionDefinition outside the new scope and its parameters inside
 @top Program[scope] { declaration* }

@@ -1,8 +1,9 @@
 import { syntaxTree } from "@codemirror/language"
 import { EditorState, Extension, Range, Text } from "@codemirror/state"
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view"
-import { definitionNode, useNode } from "./props"
 import { SyntaxNode, Tree } from "@lezer/common"
+import { useNode } from "./use"
+import { definitionNode } from "./definition"
 
 export interface HighlightIdentifiersConfig {
     afterCursor?: boolean,

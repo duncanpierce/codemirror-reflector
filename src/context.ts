@@ -1,8 +1,9 @@
 import { Action, Diagnostic } from "@codemirror/lint"
 import { SyntaxNodeRef, SyntaxNode } from "@lezer/common"
 import { Text } from "@codemirror/state"
-import { DefinitionNode, ScopeNode, UseNode } from "./nodes"
-import { definitionNode, scopeNode, useNode } from "./props"
+import { ScopeNode, scopeNode } from "./scope"
+import { UseNode, useNode } from "./use"
+import { DefinitionNode, definitionNode } from "./definition"
 
 
 export type Severity = "hint" | "info" | "warning" | "error"

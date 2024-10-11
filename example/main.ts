@@ -85,9 +85,15 @@ let editorView = new EditorView({
                 ),
                 nodeTypes: {
                     Comment: following("Statement", hint( "Commenting statements is discouraged")),
-                    LocalVariableDefinition: unusedDefinition(remove(enclosingNodeOfType("Statement"), "Delete unused local variable")),
-                    GlobalVariableDefinition: unusedDefinition(remove(enclosingNodeOfType("GlobalVariableDeclaration"), "Delete unused global variable")),
-                    FunctionDefinition: unusedDefinition(remove(enclosingNodeOfType("FunctionDeclaration"), "Delete unused function")),
+                    LocalVariableDefinition: unusedDefinition(
+                        remove(enclosingNodeOfType("Statement"), "Delete unused local variable")
+                    ),
+                    GlobalVariableDefinition: unusedDefinition(
+                        remove(enclosingNodeOfType("GlobalVariableDeclaration"), "Delete unused global variable")
+                    ),
+                    FunctionDefinition: unusedDefinition(
+                        remove(enclosingNodeOfType("FunctionDeclaration"), "Delete unused function")
+                    ),
                     VariableUse: undefinedUse(
                         insertBefore("Statement", "var $$;\n", "Create local variable"),
                         insertBefore("FunctionDeclaration", "var $$;\n\n", "Create global variable"),

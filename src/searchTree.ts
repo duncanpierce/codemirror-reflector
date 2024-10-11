@@ -1,6 +1,5 @@
 import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
-import { ScopeNode, StructureNode } from "./nodes"
-import { scopeNode } from "./props"
+import { scopeNode, ScopeNode } from "./scope"
 
 export function searchParentScopes<T>(scope: ScopeNode, scopeFunc: (s: ScopeNode) => readonly T[]): readonly T[] {
     let search: ScopeNode | null = scope
