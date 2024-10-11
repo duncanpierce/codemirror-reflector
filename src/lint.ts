@@ -111,7 +111,7 @@ export const remove = (nodeType: string, name: string) => (c:DiagnosticContext):
     }
 }
 
-export const createBefore = (nodeType: string, template: string, name: string) => (c: DiagnosticContext): Action => {
+export const insertBefore = (nodeType: string, template: string, name: string) => (c: DiagnosticContext): Action => {
     return {
         name,
         apply: function (view: EditorView, from: number, to: number): void {

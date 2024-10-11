@@ -8,7 +8,7 @@ import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightIdentifiers } from "../src/highlightIdentifiers"
-import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, createBefore } from "../src/lint"
+import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, insertBefore } from "../src/lint"
 import { history } from "@codemirror/commands"
 
 const editorElement = document.querySelector('#editor')!
@@ -92,11 +92,11 @@ let editorView = new EditorView({
                     GlobalVariableDefinition: unusedDefinition(remove("GlobalVariableDeclaration", "Delete unused global variable")),
                     FunctionDefinition: unusedDefinition(remove("FunctionDeclaration", "Delete unused function")),
                     VariableUse: undefinedUse(
-                        createBefore("Statement", "var $$;\n", "Create local variable"),
-                        createBefore("FunctionDeclaration", "var $$;\n\n", "Create global variable"),
+                        insertBefore("Statement", "var $$;\n", "Create local variable"),
+                        insertBefore("FunctionDeclaration", "var $$;\n\n", "Create global variable"),
                         // TODO append function parameter is harder because we don't know whether to insert a `,` or not
                     ),
-                    FunctionUse: undefinedUse(createBefore("FunctionDeclaration", "func $$() {\n}\n\n", "Create function")),
+                    FunctionUse: undefinedUse(insertBefore("FunctionDeclaration", "func $$() {\n}\n\n", "Create function")),
                     // TODO it would be nice to be able to define an Alt-Enter action/command without having to create a Diagnostic
                 }
             })
