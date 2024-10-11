@@ -1,5 +1,5 @@
 import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
-import { Text } from "@codemirror/state"
+import { EditorSelection, SelectionRange, Text } from "@codemirror/state"
 import { Range } from "./range"
 import { scopeNode, ScopeNode } from "./scope"
 
@@ -11,6 +11,8 @@ export interface Node {
     readonly from: number
     readonly to: number
     readonly scope: ScopeNode | null
+    readonly selectionRange: SelectionRange
+    readonly range: Range
     before(other: Node): boolean
     after(other: Node): boolean
     equals(other: Node): boolean
@@ -58,6 +60,10 @@ export class BaseNode<T> implements Node {
         return new Range(this.from, this.to)
     }
 
+    get selectionRange(): SelectionRange {
+        return EditorSelection.range(this.from, this.to)
+    }
+    
     equals(other: Node): boolean {
         return this.from == other.from && this.to == other.to
     }

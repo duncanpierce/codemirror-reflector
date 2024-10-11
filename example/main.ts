@@ -10,6 +10,7 @@ import { error, hint, lintStructure, multipleDefinitions, undefinedUse, unusedDe
 import { history } from "@codemirror/commands"
 import { enclosingNodeOfType } from "../src/searchTree"
 import { highlightReflectorProps } from "../src/highlightReflectorProps"
+import { reflectorKeymap } from "../src/commands"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -64,6 +65,7 @@ let editorView = new EditorView({
                 ...historyKeymap,
                 ...closeBracketsKeymap,
                 indentWithTab,
+                ...reflectorKeymap,
             ]),
             // treeView(document.querySelector('#debug')!),
             // highlightReflectorProps,
