@@ -8,7 +8,7 @@ export const
   FunctionScope = 6,
   FormalParameters = 7,
   ParameterDefinition = 8,
-  FunctionBody = 9,
+  Block = 9,
   Statement = 10,
   LocalVariableDeclaration = 11,
   Var = 12,

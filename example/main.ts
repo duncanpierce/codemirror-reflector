@@ -7,7 +7,7 @@ import { defaultHighlightStyle, indentOnInput, indentUnit, syntaxHighlighting } 
 import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
-import { highlightReferences } from "../src/highlightReferences"
+import { highlightIdentifiers } from "../src/highlightIdentifiers"
 import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, removeStructure } from "../src/lint"
 import { history } from "@codemirror/commands"
 
@@ -21,9 +21,11 @@ let startingDoc =
 }
     
 func bar(a, b, c) {
+    foo(a, c, x);
     var c;
     c = a * b;
     c = c * 2;
+    var x;
     var c; # redeclare c
     c = a / b;
     var d;
@@ -63,7 +65,13 @@ let editorView = new EditorView({
             ]),
             // treeView(document.querySelector('#debug')!),
             // highlightProps,
-            highlightReferences(),
+            highlightIdentifiers({
+                definitions: false,
+                uses: false,
+                selfMark: false,
+                scopeRange: true,
+                shadows: false,
+            }),
 
             // TODO this structural information should be in languageData
             lintStructure({

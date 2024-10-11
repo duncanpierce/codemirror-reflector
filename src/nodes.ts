@@ -1,9 +1,10 @@
-import { SyntaxNodeRef } from "@lezer/common"
+import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { definitionNode, scopeNode, useNode } from "./props"
-import { searchParentScopes, searchTree } from "./searchTree"
+import { allChildren, searchParentScopes, searchSubTree, searchTree } from "./searchTree" 
+import { Range } from "./range"
 
-class BaseNode<T> {
+class BaseNode<T> implements Node {
     constructor(readonly type: T, readonly nodeRef: SyntaxNodeRef) { }
 
     get scope(): ScopeNode | null {
@@ -21,6 +22,10 @@ class BaseNode<T> {
         }
     }
 
+    get node(): SyntaxNode {
+        return this.nodeRef.node
+    }
+
     get from(): number {
         return this.nodeRef.from
     }
@@ -29,16 +34,20 @@ class BaseNode<T> {
         return this.nodeRef.to
     }
 
-    textIn(doc: Text): string {
-        return doc.sliceString(this.from, this.to)
-    }
-
-    before(other: Range) {
+    before(other: Node) {
         return this.to <= other.from
     }
 
-    after(other: Range) {
+    after(other: Node) {
         return this.from >= other.to
+    }
+
+    get range(): Range {
+        return new Range(this.from, this.to)
+    }
+
+    equals(other: Node): boolean {
+        return this.from == other.from && this.to == other.to
     }
 }
 
@@ -65,22 +74,30 @@ export class ScopeType {
 }
 
 export class ScopeNode extends BaseNode<ScopeType> {
+    get inScopeRange(): Range {
+        return new Range(this.from, this.to)
+    }
+
     uses(doc: Text): readonly UseNode[] {
-        return searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
+        return searchTree(this.nodeRef, this.type.usePaths, useNode, nestedScope => nestedScope.undefinedUses(doc))
     }
 
     undefinedUses(doc: Text): readonly UseNode[] {
-        let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, nodeRef => useNode(nodeRef), nestedScope => nestedScope.undefinedUses(doc))
+        let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, useNode, nestedScope => nestedScope.undefinedUses(doc))
         let definitions = this.definitionsByName(doc)
-        return undefinedUses.filter(use => !definitions.has(use.textIn(doc)))
+        return undefinedUses.filter(use => !definitions.has(use.identifier(doc)))
     }
 
     get definitions(): readonly DefinitionNode[] {
-        return searchTree(this.nodeRef, this.type.definitionPaths, nodeRef => definitionNode(nodeRef), nestedScope => [])
+        return searchTree(this.nodeRef, this.type.definitionPaths, definitionNode, nestedScope => [])
+    }
+
+    nestedDefinitions(doc: Text): readonly DefinitionNode[] {
+        return allChildren(this.node).flatMap(child => searchSubTree(child, definitionNode, scope => scope.nestedDefinitions(doc)))
     }
 
     definitionsByName(doc: Text): Map<string, readonly DefinitionNode[]> {
-        return Map.groupBy(this.definitions, definition => definition.textIn(doc))
+        return Map.groupBy(this.definitions, definition => definition.identifier(doc))
     }
 
     matchingDefinitions(use: UseNode, doc: Text): readonly DefinitionNode[] {
@@ -123,7 +140,8 @@ export class UseNode extends IdentifierNode<UseType> {
 export class DefinitionType {
     constructor(
         readonly namespace: string,
-        readonly redefines: boolean
+        readonly overridePrevious: boolean,
+        readonly wholeScope: boolean
     ) { }
 
     of(ref: SyntaxNodeRef): DefinitionNode {
@@ -131,7 +149,7 @@ export class DefinitionType {
     }
 
     toString(): string {
-        return `namespace:${this.namespace} redefines:${this.redefines}`
+        return `namespace:${this.namespace} redefines:${this.overridePrevious}`
     }
 }
 
@@ -140,12 +158,35 @@ export class DefinitionNode extends IdentifierNode<DefinitionType> {
         return this.scope?.matchingUses(this, doc) ?? []
     }
 
-    withinScope(use: UseNode, peers: readonly DefinitionNode[]): boolean {
-        if (!this.type.redefines) return true
-        if (use.before(this)) return false
-        let nextRedefinition = peers.find(definition => definition.after(this))
-        if (nextRedefinition) return use.before(nextRedefinition)
+    withinScope(node: Node, sameNamedDefinitions: readonly DefinitionNode[]): boolean {
+        if (!this.type.overridePrevious) return true
+        if (node.before(this)) return false
+        let nextRedefinition = sameNamedDefinitions.find(definition => definition.after(this))
+        if (nextRedefinition) return node.before(nextRedefinition)
         return true
+    }
+
+    inScopeRanges(doc: Text): readonly Range[] {
+        let scope = this.scope
+        if (!scope) return []
+        if (this.type.wholeScope) return [scope.inScopeRange]
+        let maybeOverridingDefinition = scope.definitions.find(otherDef => otherDef.overrides(doc, this))
+        if (maybeOverridingDefinition) return [new Range(this.to, maybeOverridingDefinition.from)]
+        return [new Range(this.from, scope.inScopeRange.to)]
+    }
+
+    inScopeRangesWithoutShadows(doc: Text): readonly Range[] {
+        let ranges = this.inScopeRanges(doc)
+        let shadowedRanges = this.shadowingDefinitions(doc).flatMap(d => d.inScopeRanges(doc))
+        return ranges.flatMap(range => range.subtractAll(shadowedRanges))
+    }
+
+    shadowingDefinitions(doc: Text): readonly DefinitionNode[] {
+        return this.scope?.nestedDefinitions(doc).filter(d => !d.equals(this) && sameName(doc, this)(d)) ?? []
+    }
+
+    overrides(doc: Text, other: DefinitionNode): boolean {
+        return this.type.overridePrevious && this.identifier(doc) == other.identifier(doc) && other.before(this)
     }
 }
 
@@ -161,11 +202,14 @@ export class StructureType {
 
 export class StructureNode extends BaseNode<StructureType> { }
 
-export interface Range {
-    readonly from: number,
-    readonly to: number
-}
-
 export interface Identifier {
     identifier(doc: Text): string
+}
+
+export interface Node {
+    readonly from: number
+    readonly to: number
+    readonly scope: ScopeNode | null
+    before(other: Node): boolean
+    after(other: Node): boolean
 }

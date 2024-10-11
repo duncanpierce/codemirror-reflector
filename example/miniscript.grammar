@@ -8,7 +8,8 @@
 
 // Mark each node which defines a new scope - FunctionDeclaration has FunctionDefinition outside the new scope and its parameters inside
 @top Program[scope] { declaration* }
-FunctionScope[scope] { FormalParameters "{" FunctionBody "}" }
+FunctionScope[scope] { FormalParameters Block }
+Block[scope] { "{" Statement* "}" }
 
 // Mark structures - nodes that, if removed, maintain the validity of the syntax tree
 FunctionDeclaration[structure] { Function FunctionDefinition FunctionScope }
@@ -16,10 +17,10 @@ GlobalVariableDeclaration[structure] { Var GlobalVariableDefinition ";" }
 Statement[structure] { (LocalVariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
 // Mark each definition of a function or variable
-GlobalVariableDefinition[definition] { identifier }
-FunctionDefinition[definition] { identifier }
-ParameterDefinition[definition] { identifier }
-LocalVariableDefinition[definition="redefines"] { identifier }
+GlobalVariableDefinition[definition="wholeScope"] { identifier }
+FunctionDefinition[definition="wholeScope"] { identifier }
+ParameterDefinition[definition="wholeScope"] { identifier }
+LocalVariableDefinition[definition="redefines,overridePrevious"] { identifier }
 
 // Mark each use of a function or variable
 VariableUse[use] { identifier }
@@ -54,8 +55,6 @@ declaration {
     FunctionDeclaration |
     GlobalVariableDeclaration
 }
-
-FunctionBody { Statement* }
 
 FormalParameters { list<ParameterDefinition> }
 ActualParameters { list<Expression> }

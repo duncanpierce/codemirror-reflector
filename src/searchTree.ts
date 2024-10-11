@@ -25,7 +25,7 @@ export function searchTree<T>(
     return c.flatMap(child => searchSubTree(child, findFunc, scopeFunc))
 }
 
-function searchSubTree<T>(
+export function searchSubTree<T>(
     node: SyntaxNode,
     findFunc: (s: SyntaxNode) => (T | undefined),
     scopeFunc: (s: ScopeNode) => readonly T[]
