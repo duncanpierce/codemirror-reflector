@@ -1,6 +1,6 @@
 import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
 import { ScopeNode, StructureNode } from "./nodes"
-import { scopeNode, structureNode } from "./props"
+import { scopeNode } from "./props"
 
 export function searchParentScopes<T>(scope: ScopeNode, scopeFunc: (s: ScopeNode) => readonly T[]): readonly T[] {
     let search: ScopeNode | null = scope
@@ -64,8 +64,4 @@ export function findEnclosingNode(found: (searchNode: SyntaxNodeRef) => boolean,
         search = search.parent
     }
     return null
-}
-
-export function findEnclosingStructure(nodeRef: SyntaxNodeRef): StructureNode | null {
-    return findEnclosingNode(searchNode => structureNode(searchNode) !== undefined, nodeRef) as StructureNode | null
 }

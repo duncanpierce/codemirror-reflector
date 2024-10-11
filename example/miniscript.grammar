@@ -4,17 +4,11 @@
 @external prop scope from "../src/props"
 @external prop definition from "../src/props"
 @external prop use from "../src/props"
-@external prop structure from "../src/props"
 
 // Mark each node which defines a new scope - FunctionDeclaration has FunctionDefinition outside the new scope and its parameters inside
 @top Program[scope] { declaration* }
 FunctionScope[scope] { FormalParameters Block }
 Block[scope] { "{" Statement* "}" }
-
-// Mark structures - nodes that, if removed, maintain the validity of the syntax tree
-FunctionDeclaration[structure] { Function FunctionDefinition FunctionScope }
-GlobalVariableDeclaration[structure] { Var GlobalVariableDefinition ";" }
-Statement[structure] { (LocalVariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
 // Mark each definition of a function or variable
 GlobalVariableDefinition[definition="wholeScope"] { identifier }
@@ -61,6 +55,9 @@ ActualParameters { list<Expression> }
 ReturnStatement { Return Expression }
 Assignment { VariableUse "=" Expression }
 LocalVariableDeclaration { Var LocalVariableDefinition }
+FunctionDeclaration { Function FunctionDefinition FunctionScope }
+GlobalVariableDeclaration { Var GlobalVariableDefinition ";" }
+Statement { (LocalVariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
 Expression {
     Number |

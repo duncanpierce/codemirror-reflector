@@ -8,7 +8,7 @@ import { miniscript } from "./miniscript-language"
 import { treeView } from "./treeview"
 import { highlightProps } from "../src/highlightProps"
 import { highlightIdentifiers } from "../src/highlightIdentifiers"
-import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, removeStructure } from "../src/lint"
+import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, createBefore } from "../src/lint"
 import { history } from "@codemirror/commands"
 
 const editorElement = document.querySelector('#editor')!
@@ -17,7 +17,8 @@ let startingDoc =
     `func foo(a, b) {
     var c; # declare c
     c = a + b; # assign to c
-    return c;
+    frog(10); # undefined function - the error has an action that fixes it
+    return c + q; # undefined variable - the error has an action that fixes it
 }
     
 func bar(a, b, c) {
@@ -81,14 +82,21 @@ let editorView = new EditorView({
                     error("Syntax error"),
                 ),
                 allNodes: all(
-                    unusedDefinition(removeStructure), 
-                    undefinedUse(), 
                     multipleDefinitions()
                 ),
                 nodeTypes: {
                     Comment: following("Statement", hint(
                         "Commenting statements is discouraged",
                     )),
+                    LocalVariableDefinition: unusedDefinition(remove("Statement", "Delete unused local variable")),
+                    GlobalVariableDefinition: unusedDefinition(remove("GlobalVariableDeclaration", "Delete unused global variable")),
+                    FunctionDefinition: unusedDefinition(remove("FunctionDeclaration", "Delete unused function")),
+                    VariableUse: undefinedUse(
+                        createBefore("Statement", "var $$;\n", "Create local variable"),
+                        createBefore("FunctionDeclaration", "var $$;\n\n", "Create global variable"),
+                        // TODO append function parameter is harder because we don't know whether to insert a `,` or not
+                    ),
+                    FunctionUse: undefinedUse(createBefore("FunctionDeclaration", "func $$() {\n}\n\n", "Create function")),
                     // TODO it would be nice to be able to define an Alt-Enter action/command without having to create a Diagnostic
                 }
             })

@@ -5,7 +5,9 @@ import { SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { DefinitionNode, ScopeNode, UseNode } from "./nodes"
 import { definitionNode, scopeNode, useNode } from "./props"
-import { findEnclosingNodeOfType, findEnclosingStructure } from "./searchTree"
+import { findEnclosingNodeOfType } from "./searchTree"
+
+export type ContextualAction = (c: DiagnosticContext) => Action
 
 export const lintStructure = (spec: LintSpec) => linter((view: EditorView): readonly Diagnostic[] => {
     let diagnostics: Diagnostic[] = []
@@ -30,7 +32,7 @@ export const lintStructure = (spec: LintSpec) => linter((view: EditorView): read
     return diagnostics
 })
 
-export const unusedDefinition = (...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const unusedDefinition = (...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     let definitionNode = c.definitionNode
     if (definitionNode) {
         if (definitionNode.matchingUses(c.doc).length === 0) {
@@ -39,7 +41,7 @@ export const unusedDefinition = (...actions: readonly Action[]) => (c: Diagnosti
     }
 }
 
-export const undefinedUse = (...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const undefinedUse = (...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     let useNode = c.useNode
     if (useNode) {
         if (useNode.matchingDefinitions(c.doc).length === 0) {
@@ -48,7 +50,7 @@ export const undefinedUse = (...actions: readonly Action[]) => (c: DiagnosticCon
     }
 }
 
-export const multipleDefinitions = (...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const multipleDefinitions = (...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     let definitionNode = c.definitionNode
     if (definitionNode) {
         let scope = definitionNode.scope
@@ -60,19 +62,19 @@ export const multipleDefinitions = (...actions: readonly Action[]) => (c: Diagno
 
 export const alwaysOK = (c: DiagnosticContext) => { }
 
-export const error = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const error = (message: string, ...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     c.error(message, actions)
 }
 
-export const warning = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const warning = (message: string, ...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     c.warning(message, actions)
 }
 
-export const info = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const info = (message: string, ...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     c.info(message, actions)
 }
 
-export const hint = (message: string, ...actions: readonly Action[]) => (c: DiagnosticContext) => {
+export const hint = (message: string, ...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     c.hint(message, actions)
 }
 
@@ -98,7 +100,7 @@ export const stepThrough = (stop: (c: DiagnosticContext) => boolean, ...linters:
     }
 }
 
-export function remove(nodeType: string, name: string): Action {
+export const remove = (nodeType: string, name: string) => (c:DiagnosticContext): Action => {
     return {
         name,
         apply: function (view: EditorView, from: number, to: number): void {
@@ -109,12 +111,14 @@ export function remove(nodeType: string, name: string): Action {
     }
 }
 
-export const removeStructure: Action = {
-    name: "Remove",
-    apply: function (view: EditorView, from: number, to: number): void {
-        let tree = syntaxTree(view.state)
-        let node = findEnclosingStructure(tree.resolve(from, 1))
-        if (node) view.dispatch(view.state.update({ changes: { from: node.from, to: node.to, insert: "" } }))
+export const createBefore = (nodeType: string, template: string, name: string) => (c: DiagnosticContext): Action => {
+    return {
+        name,
+        apply: function (view: EditorView, from: number, to: number): void {
+            let tree = syntaxTree(view.state)
+            let node = findEnclosingNodeOfType(nodeType, tree.resolve(from, 1))
+            if (node) view.dispatch(view.state.update({ changes: { from: node.from, insert: template.replaceAll("$$", c.text) } }))
+        }
     }
 }
 
@@ -152,23 +156,23 @@ export class DiagnosticContext {
         return this._diagnostics.length > 0
     }
 
-    diagnostic(severity: Severity, message: string, actions: readonly Action[] = []): void {
-        this._diagnostics.push({ from: this.nodeRef.from, to: this.nodeRef.to, message: message, severity: severity, actions: actions })
+    diagnostic(severity: Severity, message: string, actions: readonly ContextualAction[] = []): void {
+        this._diagnostics.push({ from: this.nodeRef.from, to: this.nodeRef.to, message: message, severity: severity, actions: actions.map(a => a(this)) })
     }
 
-    hint(message: string, actions: readonly Action[] = []): void {
+    hint(message: string, actions: readonly ContextualAction[] = []): void {
         this.diagnostic("hint", message, actions)
     }
 
-    info(message: string, actions: readonly Action[] = []): void {
+    info(message: string, actions: readonly ContextualAction[] = []): void {
         this.diagnostic("info", message, actions)
     }
 
-    warning(message: string, actions: readonly Action[] = []): void {
+    warning(message: string, actions: readonly ContextualAction[] = []): void {
         this.diagnostic("warning", message, actions)
     }
 
-    error(message: string, actions: readonly Action[] = []): void {
+    error(message: string, actions: readonly ContextualAction[] = []): void {
         this.diagnostic("error", message, actions)
     }
 
