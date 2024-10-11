@@ -4,7 +4,8 @@
 	"scripts": {
 		"vite": "tsc --noEmit && vite example",
 		"build": "tsc --noEmit && vite build",
-		"grammar": "lezer-generator example/miniscript.grammar -o example/miniscript.js"
+		"grammar": "lezer-generator example/miniscript.grammar -o example/miniscript.js",
+		"loc": "wc `find src -name '*.ts'`"
 	},
 	"devDependencies": {
 		"@lezer/generator": "^1.7.1",
