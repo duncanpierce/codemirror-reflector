@@ -5,11 +5,10 @@ import { defaultKeymap, historyKeymap, indentWithTab } from "@codemirror/command
 import { lintGutter, lintKeymap } from "@codemirror/lint"
 import { defaultHighlightStyle, indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language"
 import { miniscript } from "./miniscript-language"
-import { treeView } from "./treeview"
-import { highlightProps } from "../src/highlightProps"
 import { highlightIdentifiers } from "../src/highlightIdentifiers"
-import { error, hint, info, warning, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, insertBefore } from "../src/lint"
+import { error, hint, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, insertBefore } from "../src/lint"
 import { history } from "@codemirror/commands"
+import { enclosingNodeOfType } from "../src/searchTree"
 
 const editorElement = document.querySelector('#editor')!
 
@@ -85,12 +84,10 @@ let editorView = new EditorView({
                     multipleDefinitions()
                 ),
                 nodeTypes: {
-                    Comment: following("Statement", hint(
-                        "Commenting statements is discouraged",
-                    )),
-                    LocalVariableDefinition: unusedDefinition(remove("Statement", "Delete unused local variable")),
-                    GlobalVariableDefinition: unusedDefinition(remove("GlobalVariableDeclaration", "Delete unused global variable")),
-                    FunctionDefinition: unusedDefinition(remove("FunctionDeclaration", "Delete unused function")),
+                    Comment: following("Statement", hint( "Commenting statements is discouraged")),
+                    LocalVariableDefinition: unusedDefinition(remove(enclosingNodeOfType("Statement"), "Delete unused local variable")),
+                    GlobalVariableDefinition: unusedDefinition(remove(enclosingNodeOfType("GlobalVariableDeclaration"), "Delete unused global variable")),
+                    FunctionDefinition: unusedDefinition(remove(enclosingNodeOfType("FunctionDeclaration"), "Delete unused function")),
                     VariableUse: undefinedUse(
                         insertBefore("Statement", "var $$;\n", "Create local variable"),
                         insertBefore("FunctionDeclaration", "var $$;\n\n", "Create global variable"),

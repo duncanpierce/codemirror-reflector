@@ -1,13 +1,10 @@
 import { syntaxTree } from "@codemirror/language"
 import { Action, Diagnostic, linter } from "@codemirror/lint"
 import { EditorView } from "codemirror"
+import { findEnclosingNodeOfType, Locator } from "./searchTree"
+import { ContextualAction, DiagnosticContext } from "./context"
 import { SyntaxNodeRef } from "@lezer/common"
-import { Text } from "@codemirror/state"
-import { DefinitionNode, ScopeNode, UseNode } from "./nodes"
-import { definitionNode, scopeNode, useNode } from "./props"
-import { findEnclosingNodeOfType } from "./searchTree"
 
-export type ContextualAction = (c: DiagnosticContext) => Action
 
 export const lintStructure = (spec: LintSpec) => linter((view: EditorView): readonly Diagnostic[] => {
     let diagnostics: Diagnostic[] = []
@@ -100,12 +97,11 @@ export const stepThrough = (stop: (c: DiagnosticContext) => boolean, ...linters:
     }
 }
 
-export const remove = (nodeType: string, name: string) => (c:DiagnosticContext): Action => {
+export const remove = (locate: Locator, name: string) => (c:DiagnosticContext): Action => {
     return {
         name,
         apply: function (view: EditorView, from: number, to: number): void {
-            let tree = syntaxTree(view.state)
-            let node = findEnclosingNodeOfType(nodeType, tree.resolve(from, 1))
+            let node = locate(c.nodeRef)
             if (node) view.dispatch(view.state.update({ changes: { from: node.from, to: node.to, insert: "" } }))
         }
     }
@@ -115,71 +111,22 @@ export const insertBefore = (nodeType: string, template: string, name: string) =
     return {
         name,
         apply: function (view: EditorView, from: number, to: number): void {
-            let tree = syntaxTree(view.state)
-            let node = findEnclosingNodeOfType(nodeType, tree.resolve(from, 1))
+            let node = findEnclosingNodeOfType(nodeType, c.nodeRef)
             if (node) view.dispatch(view.state.update({ changes: { from: node.from, insert: template.replaceAll("$$", c.text) } }))
         }
     }
 }
 
-export type Severity = "hint" | "info" | "warning" | "error"
-
-export class DiagnosticContext {
-    private _diagnostics: Diagnostic[] = []
-
-    constructor(
-        readonly doc: Text,
-        readonly nodeRef: SyntaxNodeRef,
-    ) { }
-
-    get text(): string {
-        return this.doc.sliceString(this.nodeRef.from, this.nodeRef.to)
-    }
-
-    get scopeNode(): ScopeNode | undefined {
-        return scopeNode(this.nodeRef)
-    }
-
-    get useNode(): UseNode | undefined {
-        return useNode(this.nodeRef)
-    }
-
-    get definitionNode(): DefinitionNode | undefined {
-        return definitionNode(this.nodeRef)
-    }
-
-    get diagnostics(): readonly Diagnostic[] {
-        return this._diagnostics
-    }
-
-    get hasDiagnostics(): boolean {
-        return this._diagnostics.length > 0
-    }
-
-    diagnostic(severity: Severity, message: string, actions: readonly ContextualAction[] = []): void {
-        this._diagnostics.push({ from: this.nodeRef.from, to: this.nodeRef.to, message: message, severity: severity, actions: actions.map(a => a(this)) })
-    }
-
-    hint(message: string, actions: readonly ContextualAction[] = []): void {
-        this.diagnostic("hint", message, actions)
-    }
-
-    info(message: string, actions: readonly ContextualAction[] = []): void {
-        this.diagnostic("info", message, actions)
-    }
-
-    warning(message: string, actions: readonly ContextualAction[] = []): void {
-        this.diagnostic("warning", message, actions)
-    }
-
-    error(message: string, actions: readonly ContextualAction[] = []): void {
-        this.diagnostic("error", message, actions)
-    }
-
-    clearDiagnostics(): void {
-        this._diagnostics = []
-    }
-}
+// export const insertParameter = (nodeType: string, name: string) => (c: DiagnosticContext): Action => {
+//     return {
+//         name,
+//         apply: function (view: EditorView, from: number, to: number): void {
+//             let tree = syntaxTree(view.state)
+//             let node = findEnclosingNodeOfType(nodeType, tree.resolve(from, 1))
+//             if (node) view.dispatch(view.state.update({ changes: { from: node.from, insert: template.replaceAll("$$", c.text) } }))
+//         }
+//     }
+// }
 
 export type NodeLinter = (item: DiagnosticContext) => void
 

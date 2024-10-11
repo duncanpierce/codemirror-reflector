@@ -52,7 +52,7 @@ export function allChildren(node: SyntaxNode): readonly SyntaxNode[] {
 }
 
 export function findEnclosingNodeOfType(nodeType: string, nodeRef: SyntaxNodeRef): SyntaxNode | null {
-    return findEnclosingNode(searchNode => searchNode.type.name === nodeType, nodeRef)
+    return findEnclosingNode(searchNode => searchNode.type.is(nodeType), nodeRef)
 }
 
 export function findEnclosingNode(found: (searchNode: SyntaxNodeRef) => boolean, nodeRef: SyntaxNodeRef): SyntaxNode | null {
@@ -65,3 +65,7 @@ export function findEnclosingNode(found: (searchNode: SyntaxNodeRef) => boolean,
     }
     return null
 }
+
+export type Locator = (nodeRef: SyntaxNodeRef) => SyntaxNodeRef | null | undefined
+
+export const enclosingNodeOfType = (nodeType: string) => (nodeRef: SyntaxNodeRef) => findEnclosingNodeOfType(nodeType, nodeRef)
