@@ -42,6 +42,12 @@ class BaseNode<T> {
     }
 }
 
+export class IdentifierNode<T> extends BaseNode<T> implements Identifier {
+    identifier(doc: Text): string {
+        return doc.sliceString(this.from, this.to)
+    }
+}
+
 export class ScopeType {
     constructor(
         readonly namespace: readonly string[],
@@ -92,8 +98,8 @@ export class ScopeNode extends BaseNode<ScopeType> {
     }
 }
 
-const sameName = (doc: Text, a: Range) => (b: Range): boolean => {
-    return doc.sliceString(a.from, a.to) == doc.sliceString(b.from, b.to)
+const sameName = (doc: Text, id1: Identifier) => (id2: Identifier): boolean => {
+    return id1.identifier(doc) == id2.identifier(doc)
 }
 
 export class UseType {
@@ -108,7 +114,7 @@ export class UseType {
     }
 }
 
-export class UseNode extends BaseNode<UseType> {
+export class UseNode extends IdentifierNode<UseType> {
     matchingDefinitions(doc: Text): readonly DefinitionNode[] {
         return this.scope?.matchingDefinitions(this, doc) ?? []
     }
@@ -129,7 +135,7 @@ export class DefinitionType {
     }
 }
 
-export class DefinitionNode extends BaseNode<DefinitionType> {
+export class DefinitionNode extends IdentifierNode<DefinitionType> {
     matchingUses(doc: Text): readonly UseNode[] {
         return this.scope?.matchingUses(this, doc) ?? []
     }
@@ -158,4 +164,8 @@ export class StructureNode extends BaseNode<StructureType> { }
 export interface Range {
     readonly from: number,
     readonly to: number
+}
+
+export interface Identifier {
+    identifier(doc: Text): string
 }

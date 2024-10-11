@@ -52,8 +52,8 @@ function createWidgets(state: EditorState, config: HighlightReferencesConfig): D
 export function highlightReferences(config: HighlightReferencesConfig = {}): readonly Extension[] {
     return [
         EditorView.baseTheme({
-            ".cm-use": { backgroundColor: "#328c8252" },
-            ".cm-definition": { backgroundColor: "#328c8252" },
+            ".cm-use": { backgroundColor: "#32c07052" },
+            ".cm-definition": { backgroundColor: "#3270c052" },
             ".cm-unmatchedDefinition": { backgroundColor: "#bb555544" },
             ".cm-unmatchedUse": { backgroundColor: "#bb555544" },
         }),

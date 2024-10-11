@@ -20,7 +20,7 @@ let startingDoc =
     return c;
 }
     
-func bar(a, b) {
+func bar(a, b, c) {
     var c;
     c = a * b;
     c = c * 2;
