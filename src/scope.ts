@@ -1,5 +1,5 @@
 import { NodeProp, SyntaxNode, SyntaxNodeRef } from "@lezer/common"
-import { BaseNode, parsePropKeyValues, sameName } from "./nodes"
+import { BaseNode, differentNode, parsePropKeyValues, sameIdentifier } from "./nodes"
 import { allChildren, searchParentScopes, searchSubTree, searchTree } from "./searchTree"
 import { Range } from "./range"
 import { Text } from "@codemirror/state"
@@ -42,39 +42,29 @@ export class ScopeNode extends BaseNode<ScopeType> {
         return new Range(this.from, this.to)
     }
 
-    uses(doc: Text): readonly UseNode[] {
-        return searchTree(this.nodeRef, this.type.usePaths, useNode, nestedScope => nestedScope.undefinedUses(doc))
-    }
-
-    undefinedUses(doc: Text): readonly UseNode[] {
-        let undefinedUses = searchTree(this.nodeRef, this.type.usePaths, useNode, nestedScope => nestedScope.undefinedUses(doc))
-        let definitions = this.definitionsByName(doc)
-        return undefinedUses.filter(use => !definitions.has(use.identifier(doc)))
-    }
-
-    get definitions(): readonly DefinitionNode[] {
-        return searchTree(this.nodeRef, this.type.definitionPaths, definitionNode, nestedScope => [])
-    }
-
-    nestedDefinitions(doc: Text): readonly DefinitionNode[] {
-        return allChildren(this.node).flatMap(child => searchSubTree(child, definitionNode, scope => scope.nestedDefinitions(doc)))
-    }
-
-    definitionsByName(doc: Text): Map<string, readonly DefinitionNode[]> {
-        return Map.groupBy(this.definitions, definition => definition.identifier(doc))
-    }
-
     matchingDefinitions(use: UseNode, doc: Text): readonly DefinitionNode[] {
         return searchParentScopes(this, scope => {
-            let relevantDefinitions = scope.definitions.filter(sameName(doc, use))
-            return relevantDefinitions.filter(definition => definition.withinScope(use, relevantDefinitions))
+            let sameIdentifierDefinitions = scope.allDefinitions.filter(sameIdentifier(doc, use))
+            return sameIdentifierDefinitions.filter(definition => definition.withinScope(use, sameIdentifierDefinitions))
         })
+    }
+
+    get allDefinitions(): readonly DefinitionNode[] {
+        return searchTree(this.nodeRef, this.type.definitionPaths, definitionNode)
+    }
+
+    get usesDirectlyInThisScope(): readonly UseNode[] {
+        return searchTree(this.nodeRef, this.type.usePaths, useNode, nestedScope => [])
     }
 
     matchingUses(definition: DefinitionNode, doc: Text): readonly UseNode[] {
-        return searchParentScopes(this, scope => {
-            let relevantDefinitions = scope.definitions.filter(sameName(doc, definition))
-            return scope.uses(doc).filter(sameName(doc, definition)).filter(use => definition.withinScope(use, relevantDefinitions))
-        })
+        return searchTree(this.nodeRef, this.type.usePaths, useNode)
+            .filter(sameIdentifier(doc, definition))
+            .filter(use => use.matchingDefinitions(doc).some(d => d.equals(definition)))
+    }
+
+    conflictingDefinitions(doc: Text, definition: DefinitionNode): readonly DefinitionNode[] {
+        let sameIdentifierDefinitions = this.allDefinitions.filter(sameIdentifier(doc, definition))
+        return sameIdentifierDefinitions.filter(d => d.withinScope(definition, sameIdentifierDefinitions))
     }
 }

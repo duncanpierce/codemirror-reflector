@@ -8,7 +8,7 @@
 // Mark each node which defines a new scope - FunctionDeclaration has FunctionDefinition outside the new scope and its parameters inside
 @top Program[scope] { declaration* }
 FunctionScope[scope] { FormalParameters Block }
-Block[scope] { "{" Statement* "}" }
+Block[scope] { OpenBrace Statement* CloseBrace }
 
 // Mark each definition of a function or variable
 GlobalVariableDefinition[definition="wholeScope"] { identifier }
@@ -19,7 +19,6 @@ LocalVariableDefinition[definition="redefines,overridePrevious"] { identifier }
 // Mark each use of a function or variable
 VariableUse[use] { identifier }
 FunctionUse[use] { identifier }
-
 
 // End of extra things for Reflector - everything below is ordinary grammar
 
@@ -59,6 +58,11 @@ FunctionDeclaration { Function FunctionDefinition FunctionScope }
 GlobalVariableDeclaration { Var GlobalVariableDefinition ";" }
 Statement { (LocalVariableDeclaration | Assignment | FunctionCall | ReturnStatement) ";" }
 
+OpenBrace[closedBy=CloseBrace] { "{" }
+CloseBrace[openedBy=OpenBrace] { "}" }
+OpenParen[closedBy=CloseParen] { "(" }
+CloseParen[openedBy=OpenParen] { ")" }
+
 Expression {
     Number |
     String |
@@ -81,6 +85,6 @@ Binary {
     Expression !cmp ("<" | ">" | "=" | "<>" | "<=" | ">=") Expression
 }
 
-SubExpression { "(" Expression ")" }
+SubExpression { OpenParen Expression CloseParen }
 
 FunctionCall { FunctionUse ActualParameters }

@@ -1,7 +1,7 @@
 import { NodeProp, SyntaxNode, SyntaxNodeRef } from "@lezer/common"
 import { Text } from "@codemirror/state"
 import { Range } from "./range"
-import { IdentifierNode, parsePropKeyValues, sameName } from "./nodes"
+import { IdentifierNode, parsePropKeyValues, sameIdentifier } from "./nodes"
 import { UseNode } from "./use"
 import { Node } from "./nodes"
 
@@ -41,31 +41,16 @@ export class DefinitionNode extends IdentifierNode<DefinitionType> {
         return this.scope?.matchingUses(this, doc) ?? []
     }
 
+    conflictingDefinitions(doc: Text): readonly DefinitionNode[] {
+        return this.scope?.conflictingDefinitions(doc, this) ?? []
+    }
+
     withinScope(node: Node, sameNamedDefinitions: readonly DefinitionNode[]): boolean {
         if (!this.type.overridePrevious) return true
         if (node.before(this)) return false
         let nextRedefinition = sameNamedDefinitions.find(definition => definition.after(this))
         if (nextRedefinition) return node.before(nextRedefinition)
         return true
-    }
-
-    inScopeRanges(doc: Text): readonly Range[] {
-        let scope = this.scope
-        if (!scope) return []
-        if (this.type.wholeScope) return [scope.inScopeRange]
-        let maybeOverridingDefinition = scope.definitions.find(otherDef => otherDef.overrides(doc, this))
-        if (maybeOverridingDefinition) return [new Range(this.to, maybeOverridingDefinition.from)]
-        return [new Range(this.from, scope.inScopeRange.to)]
-    }
-
-    inScopeRangesWithoutShadows(doc: Text): readonly Range[] {
-        let ranges = this.inScopeRanges(doc)
-        let shadowedRanges = this.shadowingDefinitions(doc).flatMap(d => d.inScopeRanges(doc))
-        return ranges.flatMap(range => range.subtractAll(shadowedRanges))
-    }
-
-    shadowingDefinitions(doc: Text): readonly DefinitionNode[] {
-        return this.scope?.nestedDefinitions(doc).filter(d => !d.equals(this) && sameName(doc, this)(d)) ?? []
     }
 
     overrides(doc: Text, other: DefinitionNode): boolean {

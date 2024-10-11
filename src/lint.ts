@@ -50,8 +50,7 @@ export const undefinedUse = (...actions: readonly ContextualAction[]) => (c: Dia
 export const multipleDefinitions = (...actions: readonly ContextualAction[]) => (c: DiagnosticContext) => {
     let definitionNode = c.definitionNode
     if (definitionNode) {
-        let scope = definitionNode.scope
-        if (scope && scope.definitionsByName(c.doc).get(c.text)!.length > 1) {
+        if (definitionNode.conflictingDefinitions(c.doc).length > 1) {
             c.error(`'${c.text}' is defined more than once`, actions)
         }
     }

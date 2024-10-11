@@ -2,7 +2,9 @@ import { SelectionRange, Text } from "@codemirror/state"
 import { NodeProp, SyntaxNode } from "@lezer/common"
 import { EditorView } from "@codemirror/view"
 import { syntaxTree } from "@codemirror/language"
-import { definition, scope, use } from "../src/props"
+import { scope } from "../src/scope"
+import { use } from "../src/use"
+import { definition } from "../src/definition"
 
 
 function visitTree(element: HTMLElement, doc: Text, mainSelection: SelectionRange, node: SyntaxNode, indent: number = 0) {

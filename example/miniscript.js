@@ -3,24 +3,26 @@ import {LRParser} from "@lezer/lr"
 import {scope} from "../src/scope"
 import {definition} from "../src/definition"
 import {use} from "../src/use"
-const spec_identifier = {__proto__:null,func:76, var:88, return:112}
+const spec_identifier = {__proto__:null,func:84, var:96, return:120}
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "*UQYQPOOOOQO'#C`'#C`OOQO'#Ch'#ChObQPO'#C_OgQPO'#CwOOQO'#DQ'#DQOOQO'#Cy'#CyQYQPOOOOQO'#Ca'#CaOlQPO,58yOOQO'#Cx'#CxOqQPO,59cOOQO-E6w-E6wOvQPO'#DTOOQO'#Cc'#CcO!OQPO'#CbOOQO1G.e1G.eOOQO1G.}1G.}OOQO'#Cd'#CdOOQO,59o,59oO!TQPO,59oO!]QPO'#CeOOQO,58|,58|O!kQPO'#CzO!pQPO1G/ZOOQO1G/Z1G/ZO!xQPO'#CgO!}QPO'#CkO#{QPO'#CrO$QQPO'#CjOOQO'#Cv'#CvO$VQPO'#CuO$hQPO'#CfOOQO'#C{'#C{O$mQPO,59POOQO,59P,59POOQO,59f,59fOOQO-E6x-E6xOOQO7+$u7+$uOOQO'#Ci'#CiOOQO,59R,59RO${QPO'#DeOOQO'#Ct'#CtOOQO,59^,59^O$VQPO,59UO$VQPO'#CoO%tQPO,59aO$VQPO'#CqOOQO'#Cl'#ClOOQO,59Q,59QOOQO-E6y-E6yOOQO1G.k1G.kO%{QPO,5:POOQO,5:P,5:PO&VQPO1G.pOOQO,59Z,59ZO$VQPO,59[O$VQPO,59[O$VQPO,59[O&^QPO,59]O$VQPO'#C|O&eQPO1G/kOOQO1G/k1G/kOOQO1G.v1G.vO'bQPO1G.vO'lQPO1G.vOOQO1G.w1G.wO'vQPO,59hOOQO-E6z-E6zOOQO7+%V7+%V",
-  stateData: "(Q~OsOSPOS~OvPO|QO~OuWO~OuYO~Ox]O~O!ZaO~OubOzcO~O{eO~OygOziO~OukO|QO!YnO![sO~OubO~OygOzvO~OuwO~OxgX}_X!O_X!P_X!Q_X!R_X!S_X!T_X!U_X!V_X!W_X!Z_Xy_Xz_X~OxyO~O}|O~Oa!QOb!QOukOx!PO!O}O~O!Z!RO~OukO|QO!YnO![!TO~Oz!VO~P$VO}![O!O!ZO!P!YO!Q!YO!R!ZO!S![O!T![O!U![O!V![O!W![O~O!Zia~P%SOy!^Oz!`O~P%SO!Z^i~P%SOz!dO~P%SOy!^Oz!gO~O!P!YO!Q!YO}di!Sdi!Tdi!Udi!Vdi!Wdi!Zdiydizdi~O!Odi!Rdi~P&mO!O!ZO!R!ZO~P&mOypazpa~P%SO",
-  goto: "%p!YPPP!Z!_!c!f!i!l!r!u!y!}#V!y#Y#iPP#^#^#^$U$e$r!y$u!Z$y$|%S%Y%`PPP%fPP%jPPPPPPPPPPPPPPP%mTTOVTROVRXRR`XR_XQd]RtgRf_TqerTperSSOVTjerRxjSmerc!Qoy|}!P!Y!Z![!^Q!OoQ!UyQ!W|Q!X}Q!]!PQ!a!YQ!b!ZQ!c![R!e!^Sperc!Qoy|}!P!Y!Z![!^gleory|}!P!Y!Z![!^R{lToerRZSQVOR[VQhdRuhQreR!SrQ!_!UR!f!_TUOVR^XRzl",
-  nodeNames: "⚠ Comment Program FunctionDeclaration Function FunctionDefinition FunctionScope FormalParameters ParameterDefinition Block Statement LocalVariableDeclaration Var LocalVariableDefinition Assignment VariableUse Expression Number String Unary Binary SubExpression FunctionCall FunctionUse ActualParameters ReturnStatement Return GlobalVariableDeclaration GlobalVariableDefinition",
-  maxTerm: 58,
+  states: "*nQYQPOOOOQO'#C`'#C`OOQO'#Ci'#CiObQPO'#C_OgQPO'#C{OOQO'#DU'#DUOOQO'#C}'#C}QYQPOOOOQO'#Ca'#CaOlQPO,58yOOQO'#C|'#C|OqQPO,59gOOQO-E6{-E6{OvQPO'#DXOOQO'#Cc'#CcO!OQPO'#CbOOQO1G.e1G.eOOQO1G/R1G/ROOQO'#Cd'#CdOOQO,59s,59sO!TQPO,59sOOQO'#Cf'#CfO!]QPO'#CeOOQO,58|,58|O!kQPO'#DOO!pQPO1G/_OOQO1G/_1G/_O!xQPO'#ChO!}QPO'#ClO#{QPO'#CuO$QQPO'#CkOOQO'#Cy'#CyO$VQPO'#CxO$hQPO'#CgOOQO'#DP'#DPO!]QPO,59POOQO'#Cz'#CzOOQO,59P,59POOQO,59j,59jOOQO-E6|-E6|OOQO7+$y7+$yOOQO'#Cj'#CjOOQO,59S,59SO$mQPO'#DiOOQO'#Cw'#CwOOQO,59a,59aO$VQPO,59VO$VQPO'#CpO%fQPO,59dOOQO'#Cs'#CsO$VQPO'#CrOOQO'#Cm'#CmOOQO,59R,59ROOQO-E6}-E6}OOQO1G.k1G.kO%mQPO,5:TOOQO,5:T,5:TO%wQPO1G.qOOQO,59[,59[O$VQPO,59]O$VQPO,59]O$VQPO,59]O&OQPO,59^O$VQPO'#DQO&VQPO1G/oOOQO1G/o1G/oOOQO1G.w1G.wO'SQPO1G.wO'^QPO1G.wOOQO'#Ct'#CtOOQO1G.x1G.xO'hQPO,59lOOQO-E7O-E7OOOQO7+%Z7+%Z",
+  stateData: "'r~OwOSPOS~OzPO!QQO~OyWO~OyYO~O|]O~O!_aO~OybO!OcO~O!PeO~O}hO!OjO~OylO!QQO!^oO!`tO~OybO~O}hO!OxO~OyyO~O|jX!R`X!S`X!T`X!U`X!V`X!W`X!X`X!Y`X!Z`X![`X!_`X}`X!O`X~O|{O~O!R!OO~Ob!TOc!TOylO|!RO!S!PO~O!_!UO~O!O!YO~P$VO!R!_O!S!^O!T!]O!U!]O!V!^O!W!_O!X!_O!Y!_O!Z!_O![!_O~O!_la~P$tO}!aO!O!cO~P$tO!__i~P$tO!O!gO~P$tO}!aO!O!kO~O!T!]O!U!]O!Rei!Wei!Xei!Yei!Zei![ei!_ei}ei!Oei~O!Sei!Vei~P&_O!S!^O!V!^O~P&_O}ta!Ota~P$tO",
+  goto: "&]!^PPP!_!c!g!j!m!p!v!y!|#Q#U#^#Q#a#pPP#e#e#e$]$h$k$z%X#Q%[%`!_%f%i%o%u%{PPP&RPP&VPPPPPPPPPPPPPPP&YTTOVTROVRXRR`XR_XQd]RvhRg_Rf_TrfsTqfsSSOVTkfsRzkSnfsc!Tp{!O!P!S!]!^!_!aQ!QpQ!X{Q!Z!OQ![!PQ!`!SQ!d!]Q!e!^Q!f!_R!i!ac!Sp{!O!P!S!]!^!_!aR!h!`Sqfsc!Tp{!O!P!S!]!^!_!agmfps{!O!P!S!]!^!_!aR}mTpfsQufR!WsRZSQVOR[VQidRwiQsfR!VsQ!b!XR!j!bTUOVR^XR|m",
+  nodeNames: "⚠ Comment Program FunctionDeclaration Function FunctionDefinition FunctionScope FormalParameters ParameterDefinition Block OpenBrace Statement LocalVariableDeclaration Var LocalVariableDefinition Assignment VariableUse Expression Number String Unary Binary SubExpression OpenParen CloseParen FunctionCall FunctionUse ActualParameters ReturnStatement Return CloseBrace GlobalVariableDeclaration GlobalVariableDefinition",
+  maxTerm: 62,
   nodeProps: [
     [scope, -3,2,6,9,""],
-    [definition, -3,5,8,28,"wholeScope",13,"redefines,overridePrevious"],
-    [use, -2,15,23,""]
+    [definition, -3,5,8,32,"wholeScope",14,"redefines,overridePrevious"],
+    ["closedBy", 10,"CloseBrace",23,"CloseParen"],
+    [use, -2,16,26,""],
+    ["openedBy", 24,"OpenParen",30,"OpenBrace"]
   ],
   skippedNodes: [0,1],
   repeatNodeCount: 4,
-  tokenData: "&i~RfXY!gYZ!g]^!gpq!grs!xst#mxy$Uyz$Zz{$`{|$e|}$j}!O$o!P!Q$t!Q![$y!]!^%R!^!_%W!_!`%m!`!a%r!c!}&P#T#o&P#o#p&_#q#r&d~!lSs~XY!gYZ!g]^!gpq!g~!{TOY#[Zr#[s;'S#[;'S;=`#g<%lO#[~#_Prs#b~#gOb~~#jP;=`<%l#[~#rSP~OY#mZ;'S#m;'S;=`$O<%lO#m~$RP;=`<%l#m~$ZOx~~$`Oz~~$eO!P~~$jO!R~~$oOy~~$tO!O~~$yO!Q~~%OPa~!Q![$y~%WO!Z~~%]Q!S~!_!`%c!`!a%h~%hO!V~~%mO!U~~%rO}~~%wP!T~!_!`%z~&PO!W~~&URu~!Q![&P!c!}&P#T#o&P~&dO{~~&iO![~",
+  tokenData: "&i~RfXY!gYZ!g]^!gpq!grs!xst#mxy$Uyz$Zz{$`{|$e|}$j}!O$o!P!Q$t!Q![$y!]!^%R!^!_%W!_!`%m!`!a%r!c!}&P#T#o&P#o#p&_#q#r&d~!lSw~XY!gYZ!g]^!gpq!g~!{TOY#[Zr#[s;'S#[;'S;=`#g<%lO#[~#_Prs#b~#gOc~~#jP;=`<%l#[~#rSP~OY#mZ;'S#m;'S;=`$O<%lO#m~$RP;=`<%l#m~$ZO|~~$`O!O~~$eO!T~~$jO!V~~$oO}~~$tO!S~~$yO!U~~%OPb~!Q![$y~%WO!_~~%]Q!W~!_!`%c!`!a%h~%hO!Z~~%mO!Y~~%rO!R~~%wP!X~!_!`%z~&PO![~~&URy~!Q![&P!c!}&P#T#o&P~&dO!P~~&iO!`~",
   tokenizers: [0],
   topRules: {"Program":[0,2]},
-  specialized: [{term: 37, get: (value) => spec_identifier[value] || -1}],
+  specialized: [{term: 41, get: (value) => spec_identifier[value] || -1}],
   tokenPrec: 0
 })

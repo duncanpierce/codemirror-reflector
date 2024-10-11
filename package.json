@@ -2,7 +2,7 @@
 	"name": "reflector",
 	"type": "module",
 	"scripts": {
-		"vite": "vite example",
+		"vite": "tsc --noEmit && vite example",
 		"build": "tsc --noEmit && vite build",
 		"grammar": "lezer-generator example/miniscript.grammar -o example/miniscript.js"
 	},

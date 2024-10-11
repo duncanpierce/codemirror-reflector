@@ -10,16 +10,12 @@ export interface HighlightIdentifiersConfig {
     definitions?: boolean,
     uses?: boolean,
     selfMark?: boolean,
-    scopeRange?: boolean,
-    shadows?: boolean,
 }
 
-const definitionMark = Decoration.mark({ class: "cm-definition" })
-const useMark = Decoration.mark({ class: "cm-use" })
-const unmatchedDefinitionMark = Decoration.mark({ class: "cm-unmatchedDefinition" })
-const unmatchedUseMark = Decoration.mark({ class: "cm-unmatchedUse" })
-const scopeRangeMark = Decoration.mark({ class: "cm-scopeRange" })
-const shadowRangeMark = Decoration.mark({ class: "cm-shadowRange" })
+const definitionMark = Decoration.mark({ class: "cm-highlight-definition" })
+const useMark = Decoration.mark({ class: "cm-highlight-use" })
+const unmatchedDefinitionMark = Decoration.mark({ class: "cm-highlight-unmatched-definition" })
+const unmatchedUseMark = Decoration.mark({ class: "cm-highlight-unmatched-use" })
 
 function createWidgets(state: EditorState, config: HighlightIdentifiersConfig): DecorationSet {
     let widgets: Range<Decoration>[] = []
@@ -52,35 +48,16 @@ function createWidgets(state: EditorState, config: HighlightIdentifiersConfig): 
         }
     }
 
-    if (config.scopeRange ?? true) {
-        let definition = cursorNode(config.afterCursor ?? true, state, definitionNode)
-        if (definition) {
-            definition.inScopeRangesWithoutShadows(state.doc).forEach(range => {
-                widgets.push(Decoration.mark(scopeRangeMark).range(range.from, range.to))
-            })
-        }
-    }
-
-    if (config.shadows ?? true) {
-        let definition = cursorNode(config.afterCursor ?? true, state, definitionNode)
-        if (definition) {
-            definition.shadowingDefinitions(state.doc).flatMap(d => d.inScopeRanges(state.doc)).forEach(range => {
-                widgets.push(Decoration.mark(shadowRangeMark).range(range.from, range.to))
-            })
-        }
-    }
     return Decoration.set(widgets, true)
 }
 
 export function highlightIdentifiers(config: HighlightIdentifiersConfig = {}): readonly Extension[] {
     return [
         EditorView.baseTheme({
-            ".cm-use": { backgroundColor: "#32c07052" },
-            ".cm-definition": { backgroundColor: "#3270c052" },
-            ".cm-unmatchedDefinition": { backgroundColor: "#bb555544" },
-            ".cm-unmatchedUse": { backgroundColor: "#bb555544" },
-            ".cm-scopeRange": { backgroundColor: "#ffff0022" },
-            ".cm-shadowRange": { backgroundColor: "#00000022" },
+            ".cm-highlight-use": { backgroundColor: "#32c07052" },
+            ".cm-highlight-definition": { backgroundColor: "#3270c052" },
+            ".cm-highlight-unmatched-definition": { backgroundColor: "#bb555544" },
+            ".cm-highlight-unmatched-use": { backgroundColor: "#bb555544" },
         }),
 
         ViewPlugin.fromClass(class {

@@ -17,7 +17,7 @@ export function searchTree<T>(
     nodeRef: SyntaxNodeRef,
     children: readonly string[] | undefined,
     findFunc: (s: SyntaxNode) => (T | undefined),
-    scopeFunc: (s: ScopeNode) => readonly T[]
+    scopeFunc?: (s: ScopeNode) => readonly T[]
 ): readonly T[] {
     let node = nodeRef.node
     let c = children ? children.flatMap(type => node.getChildren(type)) : allChildren(node)
@@ -27,11 +27,13 @@ export function searchTree<T>(
 export function searchSubTree<T>(
     node: SyntaxNode,
     findFunc: (s: SyntaxNode) => (T | undefined),
-    scopeFunc: (s: ScopeNode) => readonly T[]
+    scopeFunc?: (s: ScopeNode) => readonly T[]
 ): readonly T[] {
-    let maybeScope = scopeNode(node)
-    if (maybeScope) {
-        return scopeFunc(maybeScope)
+    if (scopeFunc) {
+        let maybeScope = scopeNode(node)
+        if (maybeScope) {
+            return scopeFunc(maybeScope)
+        }
     }
     let results = []
     let maybeResult = findFunc(node)

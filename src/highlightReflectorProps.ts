@@ -1,18 +1,20 @@
 import { syntaxTree } from "@codemirror/language"
 import { Range } from "@codemirror/state"
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view"
-import { definitionNode, scope, scopeNode, use, useNode } from "./props"
+import { scopeNode } from "./scope"
+import { useNode } from "./use"
+import { definitionNode } from "./definition"
 
-const definitionMark = Decoration.mark({ class: "cm-definition" })
-const useMark = Decoration.mark({ class: "cm-use" })
+const definitionMark = Decoration.mark({ class: "cm-definition-prop" })
+const useMark = Decoration.mark({ class: "cm-use-prop" })
 
-const highlightPropsTheme = EditorView.baseTheme({
-    ".cm-definition": { textDecoration: "2px solid underline blue" },
-    ".cm-use": { textDecoration: "2px solid underline green" },
-    ".cm-scope": { border: "2px solid red" }
+const highlightReflectorPropsTheme = EditorView.baseTheme({
+    ".cm-definition-prop": { textDecoration: "2px solid underline blue" },
+    ".cm-use-prop": { textDecoration: "2px solid underline green" },
+    ".cm-scope-prop": { color: "red", fontWeight: "bold" },
 })
 
-export const highlightPropsPlugin = ViewPlugin.fromClass(class {
+export const highlightReflectorPropsPlugin = ViewPlugin.fromClass(class {
     decorations: DecorationSet
 
     constructor(view: EditorView) {
@@ -28,7 +30,7 @@ export const highlightPropsPlugin = ViewPlugin.fromClass(class {
     decorations: v => v.decorations,
 })
 
-export const highlightProps = [highlightPropsPlugin, highlightPropsTheme]
+export const highlightReflectorProps = [highlightReflectorPropsPlugin, highlightReflectorPropsTheme]
 
 function createWidgets(view: EditorView): DecorationSet {
     let widgets: Range<Decoration>[] = []
@@ -37,7 +39,7 @@ function createWidgets(view: EditorView): DecorationSet {
             from, to,
             enter: ref => {
                 if (scopeNode(ref)) {
-                    widgets.push(ScopeWidget.create("[", ref.from))
+                    widgets.push(ScopeWidget.create("{", ref.from))
                 }
                 if (useNode(ref)) {
                     let widget = Decoration.mark(useMark).range(ref.from, ref.to)
@@ -49,9 +51,8 @@ function createWidgets(view: EditorView): DecorationSet {
                 }
             },
             leave: ref => {
-                let scopeValue = ref.type.prop(scope)
-                if (scopeValue) {
-                    widgets.push(ScopeWidget.create("]", ref.to))
+                if (scopeNode(ref)) {
+                    widgets.push(ScopeWidget.create("}", ref.to))
                 }
             }
         })
@@ -66,7 +67,7 @@ class ScopeWidget extends WidgetType {
 
     toDOM(view: EditorView): HTMLElement {
         let element = document.createElement("span")
-        element.className = "cm-scope"
+        element.className = "cm-scope-prop"
         element.textContent = this.text
         return element
     }

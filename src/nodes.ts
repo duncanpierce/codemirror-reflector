@@ -13,6 +13,7 @@ export interface Node {
     readonly scope: ScopeNode | null
     before(other: Node): boolean
     after(other: Node): boolean
+    equals(other: Node): boolean
 }
 
 export class BaseNode<T> implements Node {
@@ -68,8 +69,12 @@ export class IdentifierNode<T> extends BaseNode<T> implements Identifier {
     }
 }
 
-export const sameName = (doc: Text, id1: Identifier) => (id2: Identifier): boolean => {
+export const sameIdentifier = (doc: Text, id1: Identifier) => (id2: Identifier): boolean => {
     return id1.identifier(doc) == id2.identifier(doc)
+}
+
+export const differentNode = (node: Node) => (other: Node): boolean => {
+    return !node.equals(other)
 }
 
 // Parse key->value[] map from e.g. "k1:v1 v2,k2:v1 v2 v3"

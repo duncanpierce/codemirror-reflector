@@ -1,6 +1,6 @@
 import { drawSelection, EditorView, keymap } from "@codemirror/view"
 import { EditorState } from "@codemirror/state"
-import { autocompletion, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete"
+import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete"
 import { defaultKeymap, historyKeymap, indentWithTab } from "@codemirror/commands"
 import { lintGutter, lintKeymap } from "@codemirror/lint"
 import { defaultHighlightStyle, indentOnInput, indentUnit, syntaxHighlighting } from "@codemirror/language"
@@ -9,34 +9,34 @@ import { highlightIdentifiers } from "../src/highlightIdentifiers"
 import { error, hint, lintStructure, multipleDefinitions, undefinedUse, unusedDefinition, first, all, matchContext, remove, following, insertBefore } from "../src/lint"
 import { history } from "@codemirror/commands"
 import { enclosingNodeOfType } from "../src/searchTree"
+import { highlightReflectorProps } from "../src/highlightReflectorProps"
 
 const editorElement = document.querySelector('#editor')!
 
 let startingDoc =
     `func foo(a, b) {
-    var c; # declare c
-    c = a + b; # assign to c
-    frog(10); # undefined function - the error has an action that fixes it
-    return c + q; # undefined variable - the error has an action that fixes it
+    var c;
+    c = a + b;
+    return c;
 }
     
-func bar(a, b, c) {
+func bar(a, b, b, c, d) {
     foo(a, c, x);
     var c;
     c = a * b;
     c = c * 2;
     var x;
-    var c; # redeclare c
+    var c;
     c = a / b;
     var d;
-    d = baz(c); # call another function, declared later
-    return c + x; # this refers to the second c and x from a higher scope
+    d = baz(c);
+    return c + x;
 }
     
 var x;
 
 func baz(n) {
-    var z; # unused variable
+    var z;
     return n * 2 + x;
 }
 `
@@ -54,6 +54,7 @@ let editorView = new EditorView({
             indentOnInput(),
             indentUnit.of("    "),
             autocompletion(),
+            closeBrackets(),
             syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
             keymap.of([
                 ...closeBracketsKeymap,
@@ -61,16 +62,15 @@ let editorView = new EditorView({
                 ...completionKeymap,
                 ...lintKeymap,
                 ...historyKeymap,
+                ...closeBracketsKeymap,
                 indentWithTab,
             ]),
             // treeView(document.querySelector('#debug')!),
-            // highlightProps,
+            // highlightReflectorProps,
             highlightIdentifiers({
-                definitions: false,
-                uses: false,
-                selfMark: false,
-                scopeRange: true,
-                shadows: false,
+                definitions: true,
+                uses: true,
+                selfMark: true,
             }),
 
             // TODO this structural information should be in languageData
@@ -84,7 +84,7 @@ let editorView = new EditorView({
                     multipleDefinitions()
                 ),
                 nodeTypes: {
-                    Comment: following("Statement", hint( "Commenting statements is discouraged")),
+                    Comment: following("Statement", hint("Commenting statements is discouraged")),
                     LocalVariableDefinition: unusedDefinition(
                         remove(enclosingNodeOfType("Statement"), "Delete unused local variable")
                     ),
@@ -94,12 +94,17 @@ let editorView = new EditorView({
                     FunctionDefinition: unusedDefinition(
                         remove(enclosingNodeOfType("FunctionDeclaration"), "Delete unused function")
                     ),
+                    ParameterDefinition: unusedDefinition(
+                        // no action because we can't remove parameter from callers yet
+                    ),
                     VariableUse: undefinedUse(
                         insertBefore("Statement", "var $$;\n", "Create local variable"),
                         insertBefore("FunctionDeclaration", "var $$;\n\n", "Create global variable"),
                         // TODO append function parameter is harder because we don't know whether to insert a `,` or not
                     ),
-                    FunctionUse: undefinedUse(insertBefore("FunctionDeclaration", "func $$() {\n}\n\n", "Create function")),
+                    FunctionUse: undefinedUse(
+                        insertBefore("FunctionDeclaration", "func $$() {\n}\n\n", "Create function")
+                    ),
                     // TODO it would be nice to be able to define an Alt-Enter action/command without having to create a Diagnostic
                 }
             })

@@ -1,17 +1,17 @@
 import { LanguageSupport, LRLanguage } from "@codemirror/language"
 import { parser } from "./miniscript"
 import { styleTags, tags } from "@lezer/highlight"
-import { StructureSpec, unusedDefinition, multipleDefinitions, undefinedUse } from "../src/OLDstructure.js"
 
 const styles = styleTags({
     "Function Var Return": tags.keyword,
-    "FunctionDeclaration/Identifier VariableDeclaration/Identifier": tags.definition(tags.variableName),
-    "FormalParameters/Identifier": tags.local(tags.variableName),
-    Identifier: tags.variableName,
-    Comment: tags.lineComment,
+    "FunctionDefinition": tags.definition(tags.variableName),
+    "GlobalVariableDefinition ParameterDefinition LocalVariableDefinition": tags.local(tags.variableName),
+    "VariableUse": tags.variableName,
+    "FunctionUse": tags.function(tags.variableName),
 
-    Number: tags.number,
-    String: tags.string,
+    "Comment": tags.lineComment,
+    "Number": tags.number,
+    "String": tags.string,
 })
 
 const miniscriptLanguage = LRLanguage.define({
@@ -23,7 +23,7 @@ const miniscriptLanguage = LRLanguage.define({
     }),
     languageData: {
         closeBrackets: { brackets: ["(", "{"] },
-        commentTokens: { line: "//" },
+        commentTokens: { line: "#" },
     }
 })
 
