@@ -22,13 +22,17 @@
 
         <h2>Demo editor</h2>
 
-        <p>This embeds a tiny language called Miniscript created for demonstration and exploration purposes. Some Reflector extensions are active.</p>
+        <p>
+            This embeds a tiny language called Miniscript created for demonstration and exploration purposes. Some Reflector extensions are active.
+        </p>
+
         <div id="editor"></div>
 
-        <h2>Keys and features</h2>
+        <h2>Key bindings</h2>
         <p>
-            The editor uses CodeMirror's <a href="https://github.com/codemirror/commands/blob/2be11c5b61348e738e25620310b3852d86aa92be/src/commands.ts#L1018">[default keymap]</a> and adds some custom keybindings:
+            The editor uses CodeMirror's <a href="https://github.com/codemirror/commands/blob/2be11c5b61348e738e25620310b3852d86aa92be/src/commands.ts#L1018">default keymap</a> and adds some custom keybindings.
         </p>
+
         <ul>
             <li>
                 <kbd>Mod-'</kbd> runs <code>selectMatchingIdentifiers</code>: with the cursor in the definition of an identifier (<code>func HERE() ...</code> or <code>var HERE;</code>), create a selection of all matching uses of this identifier, respecting scope and redefinition rules (the rules for Miniscript are explained below). This is similar to the "rename function/variable" refactoring but not as ergonomic: it doesn't check whether you are creating a conflicting name and, because it uses selections, <kbd>Esc</kbd> (which I would expect to cancel the renaming) will instead deselect the text.
@@ -38,18 +42,26 @@
             </li>
         </ul>   
 
+        <h2>Identifier matching and highlighting</h2>
+
         <p>
-            There is also highlighting of matching identifiers. When the cursor is in an identifier, matching definitions will be highlighted in blue (similar to how CodeMirror highlights matching brackets). This is a visual aid to help you understand the scope of the identifier you are working with. Similarly for uses of an identifier: when the cursor is in a definition, matching uses will be highlighted in green. It is possible (but not implemented) to show all uses and definitions of an identifier. Finally, an indentifier which doesn't have a matching definition will be shown in red.
+            There is also <strong>highlighting of matching identifiers</strong>. When the cursor is in an identifier, matching definitions will be highlighted in blue (similar to how CodeMirror highlights matching brackets). This is a visual aid to help you understand the scope of the identifier you are working with. Similarly for uses of an identifier: when the cursor is in a definition, matching uses will be highlighted in green. It is possible (but not implemented) to show all uses and definitions of an identifier. Finally, an indentifier which doesn't have a matching definition will be shown in red.
         </p>
+
+        <h2>NodeProps describe scope and identifiers</h2>
 
         <p>
             This is driven by some <a href="https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/miniscript.grammar#L4">custom props</a> in the Miniscript grammar. These mark grammar nodes that establish scope, uses and definitions of identifiers. The Miniscript grammar is explained below. With these props, Reflector can cross-reference identifiers and show you where they are defined and used. This is probably quite an inefficient process right now but it works for small files in a simple grammar like this one.
         </p>
 
+        <h2>Linting features</h2>
+
         <p>
             This structural understanding is also used to drive a linter. This shows an error <a href="https://codemirror.net/docs/ref/#lint.Diagnostic">Diagnostic</a> for duplicate definitions (e.g. a repeated parameter) and understands through the grammar annotations whether a duplicate is allowed to override an earlier definition on the same identifier in the scope, which is allowed for Miniscript local variables. If you use the highlighting or renaming feature, you will hopefully see that Reflector understands the scope of the identifier correctly even when it is redefined.
         </p>
 
+        <h2>Linting actions</h2>
+        
         <p>
             The linter also shows information markers when a definition is unused. Unused functions and local variables both have an <a href="https://codemirror.net/docs/ref/#lint.Action">Action</a> that allows the unused definition to be removed. Here is an <a href="https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/main.ts#L96">example of how to implement this</a> for Miniscript. The <code>Action</code> walks up the syntax tree until it finds the <code>FunctionDeclaration</code> node, then removes its text from the document. Because this is not aware of the skipped space nodes around the removed text, the formatting can be a bit off. This is a limitation of the current implementation.
         </p>
