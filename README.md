@@ -6,6 +6,8 @@ Reflector is a CodeMirror extension that allows [language packages](https://code
 
 **It is a promising proof-of-concept but not a stable API you should rely on and the claimed features aren't ready to use**
 
+[Demo](https://duncanpierce.github.io/) (proof of concept only)
+
 
 ## Features
 

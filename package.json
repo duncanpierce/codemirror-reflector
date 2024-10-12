@@ -3,7 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"vite": "tsc --noEmit && vite example",
-		"build": "tsc --noEmit && vite build",
+		"build": "tsc --noEmit && vite build example",
 		"grammar": "lezer-generator example/miniscript.grammar -o example/miniscript.js",
 		"loc": "wc `find src -name '*.ts'`"
 	},

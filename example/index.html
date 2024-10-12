@@ -7,8 +7,106 @@
 	</head>
     <body>
         <div id="editor"></div>
-        <h2>Tree</h2>
-        <div id="debug"></div>
+        <!-- <h2>Tree</h2>
+        <div id="debug"></div> -->
         <script type="module" src="./main.ts"></script>
     </body>
+</html>
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CodeMirror Reflector demo</title>
+		<meta charset="utf-8" />
+        <link rel="stylesheet" href="main.css">
+	</head>
+	<body>
+		<h1>CodeMirror Reflector demo</h1>
+
+        <p>
+            Refactoring, smart navigation and code assistance for <a href="https://codemirror.net/">CodeMirror</a>.
+        </p>
+        
+        <p>
+            <strong>This is a promising proof-of-concept but not a stable API you should rely on and the claimed features aren't ready to use.</strong>
+        </p>
+		
+        <p>
+            There is some extra information and the source code in the <a href="https://github.com/duncanpierce/codemirror-reflector">Reflector GitHub repository</a>.
+        </p>
+
+        <h2>Demo editor</h2>
+
+        <p>This embeds a tiny language called Miniscript created for demonstration and exploration purposes. Some Reflector extensions are active.</p>
+        <div id="editor"></div>
+
+        <h2>Keys and features</h2>
+        <p>
+            The editor uses CodeMirror's [default keymap](https://github.com/codemirror/commands/blob/2be11c5b61348e738e25620310b3852d86aa92be/src/commands.ts#L1018)
+            and adds some custom keybindings:
+        </p>
+        <ul>
+            <li>
+                `Mod-'` runs `selectMatchingIdentifiers`: with the cursor in the definition of an identifier (`func HERE() ...` or `var HERE;`), create a selection of all matching uses of this identifier, respecting scope and redefinition rules (the rules for Miniscript are explained below). This is similar to the "rename function/variable" refactoring but not as ergonomic: it doesn't check whether you are creating a conflicting name and, because it uses selections, `Esc` (which I would expect to cancel the renaming) will instead deselect the text.
+            </li>
+            <li>
+                `Mod-Shift-'` runs `goToDefinition`: with the cursor in an identifier, select its (first) definition. This is similar to the "go to definition" feature in many IDEs.
+            </li>
+        </ul>   
+
+        <p>
+            There is also highlighting of matching identifiers. When the cursor is in an identifier, matching definitions will be highlighted in blue (similar to how CodeMirror highlights matching brackets). This is a visual aid to help you understand the scope of the identifier you are working with. Similarly for uses of an identifier: when the cursor is in a definition, matching uses will be highlighted in green. It is possible (but not implemented) to show all uses and definitions of an identifier. Finally, an indentifier which doesn't have a matching definition will be shown in red.
+        </p>
+
+        <p>
+            This is driven by some [custom props](https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/miniscript.grammar#L4) in the Miniscript grammar. These mark grammar nodes that establish scope, uses and definitions of identifiers. The Miniscript grammar is explained below. With these props, Reflector can cross-reference identifiers and show you where they are defined and used. This is probably quite an inefficient process right now but it works for small files in a simple grammar like this one.
+        </p>
+
+        <p>
+            This structural understanding is also used to drive a linter. This shows an error <a href="https://codemirror.net/docs/ref/#lint.Diagnostic">Diagnostic</a> for duplicate definitions (e.g. a repeated parameter) and understands through the grammar annotations whether a duplicate is allowed to override an earlier definition on the same identifier in the scope, which is allowed for Miniscript local variables. If you use the highlighting or renaming feature, you will hopefully see that Reflector understands the scope of the identifier correctly even when it is redefined.
+        </p>
+
+        <p>
+            The linter also shows information markers when a definition is unused. Unused functions and local variables both have an [Action](https://codemirror.net/docs/ref/#lint.Action) that allows the unused definition to be removed. Here is an [example of how to implement this](https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/main.ts#L96) for Miniscript. The `Action` simply walks up the syntax tree until it finds the `FunctionDeclaration` node, then removes its text from the document. Because this is not aware of the skipped space nodes around the removed text, the formatting can be a bit off. This is a limitation of the current implementation.
+        </p>
+
+        <p>
+            Another linter rule provides an Action that can fix an undefined identifier by declaring a local or global variable.
+        </p>
+        
+        <p>
+            I've also, for no good reason other than experimenting with recognising nearby document structure, included a lint rule to suggest you shouldn't put a comment after a statement.
+        </p>
+
+        <h2>Explanation of Miniscript</h2>
+
+        <p>
+            The [grammar is here](https://github.com/duncanpierce/codemirror-reflector/blob/main/example/miniscript.grammar) but, in summary:
+        </p>
+
+        <ul>
+            <li>
+                `func NAME(ARG1, ARG2) { STATEMENTS }` defines a function. Functions in Miniscript are global and do not have to be defined before they are used. Function names must be unique. Function parameters must be unique within the function. Their scope ends at `}`
+            </li>
+            <li>
+                `var NAME;` at the top level, alongside functions, defines a global variable. Like functions, global variables do not need to be defined before they are used.
+            </li>
+            <li>
+                `var NAME;` within a function body (`{` and `}`) defines a local variable. Local variables need to be defined before they can be used. It is allowed to redefine an existing local variable or parameter within the same scope.
+            </li>
+            <li>
+                Miniscript places function and variable definitions in a separate namespace. This means you can have a function and a variable with the same name. <strong>This is not yet implemented</strong>.
+            </li>
+            <li>
+                There are also numbers and comments. Comments start with `#` and continue to the end of the line.
+            </li>
+            <li>
+                Finally, some basic arithmetic is allowed: `+`, `-`, `*`, `/`, `(` and `)`. There is operator precedence and associativity - [standard Lezer features](https://lezer.codemirror.net/docs/guide/#writing-a-grammar).
+            </li>
+        </ul>
+
+        <!-- <h2>Tree</h2>
+        <div id="debug"></div> -->
+        <script type="module" src="./main.ts"></script>
+	</body>
 </html>
