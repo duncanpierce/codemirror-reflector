@@ -12,6 +12,20 @@ export function searchParentScopes<T>(scope: ScopeNode, scopeFunc: (s: ScopeNode
     }
     return []
 }
+export function findScope(nodeRef: SyntaxNodeRef): ScopeNode | null {
+    let searchNode = nodeRef.node
+    while (true) {
+        let maybeParentNode = searchNode.parent
+        if (maybeParentNode === null) {
+            return null
+        }
+        let maybeScope = scopeNode(maybeParentNode)
+        if (maybeScope) {
+            return maybeScope
+        }
+        searchNode = maybeParentNode
+    }
+}
 
 export function searchTree<T>(
     nodeRef: SyntaxNodeRef,

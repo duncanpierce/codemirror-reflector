@@ -1,6 +1,7 @@
 import { LanguageSupport, LRLanguage } from "@codemirror/language"
 import { parser } from "./miniscript"
 import { styleTags, tags } from "@lezer/highlight"
+import { identifierCompletions } from "../src/autocomplete"
 
 const styles = styleTags({
     "Function Var Return": tags.keyword,
@@ -32,7 +33,9 @@ export function miniscript() {
     return new LanguageSupport(
         miniscriptLanguage,
         [
-            // miniscriptLanguage.data.of(completions),
+            miniscriptLanguage.data.of({
+                autocomplete: identifierCompletions,
+            }),
             // linter(lint)
         ]
     )

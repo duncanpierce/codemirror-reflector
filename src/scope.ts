@@ -49,6 +49,16 @@ export class ScopeNode extends BaseNode<ScopeType> {
         })
     }
 
+    availableDefinitionIdentifiers(doc: Text): Set<string> {
+        let results: string[] = []
+        let search: ScopeNode | null = this
+        while (search) {
+            results.push(...search.allDefinitions.map(d => d.identifier(doc)))
+            search = search.scope
+        }
+        return new Set<string>(results)
+    }
+
     get allDefinitions(): readonly DefinitionNode[] {
         return searchTree(this.nodeRef, this.type.definitionPaths, definitionNode)
     }

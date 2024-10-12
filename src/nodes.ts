@@ -2,6 +2,7 @@ import { SyntaxNode, SyntaxNodeRef } from "@lezer/common"
 import { EditorSelection, SelectionRange, Text } from "@codemirror/state"
 import { Range } from "./range"
 import { scopeNode, ScopeNode } from "./scope"
+import { findScope } from "./searchTree"
 
 export interface Identifier {
     identifier(doc: Text): string
@@ -22,18 +23,7 @@ export class BaseNode<T> implements Node {
     constructor(readonly type: T, readonly nodeRef: SyntaxNodeRef) { }
 
     get scope(): ScopeNode | null {
-        let searchNode = this.nodeRef.node
-        while (true) {
-            let maybeParentNode = searchNode.parent
-            if (maybeParentNode === null) {
-                return null
-            }
-            let maybeScope = scopeNode(maybeParentNode)
-            if (maybeScope) {
-                return maybeScope
-            }
-            searchNode = maybeParentNode
-        }
+        return findScope(this.nodeRef)
     }
 
     get node(): SyntaxNode {
