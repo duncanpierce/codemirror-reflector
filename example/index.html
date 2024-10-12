@@ -42,15 +42,14 @@
 
         <h2>Keys and features</h2>
         <p>
-            The editor uses CodeMirror's [default keymap](https://github.com/codemirror/commands/blob/2be11c5b61348e738e25620310b3852d86aa92be/src/commands.ts#L1018)
-            and adds some custom keybindings:
+            The editor uses CodeMirror's <a href="https://github.com/codemirror/commands/blob/2be11c5b61348e738e25620310b3852d86aa92be/src/commands.ts#L1018">[default keymap]</a> and adds some custom keybindings:
         </p>
         <ul>
             <li>
-                `Mod-'` runs `selectMatchingIdentifiers`: with the cursor in the definition of an identifier (`func HERE() ...` or `var HERE;`), create a selection of all matching uses of this identifier, respecting scope and redefinition rules (the rules for Miniscript are explained below). This is similar to the "rename function/variable" refactoring but not as ergonomic: it doesn't check whether you are creating a conflicting name and, because it uses selections, `Esc` (which I would expect to cancel the renaming) will instead deselect the text.
+                <kbd>Mod-'</kbd> runs <code>selectMatchingIdentifiers</code>: with the cursor in the definition of an identifier (<code>func HERE() ...</code> or <code>var HERE;</code>), create a selection of all matching uses of this identifier, respecting scope and redefinition rules (the rules for Miniscript are explained below). This is similar to the "rename function/variable" refactoring but not as ergonomic: it doesn't check whether you are creating a conflicting name and, because it uses selections, <kbd>Esc</kbd> (which I would expect to cancel the renaming) will instead deselect the text.
             </li>
             <li>
-                `Mod-Shift-'` runs `goToDefinition`: with the cursor in an identifier, select its (first) definition. This is similar to the "go to definition" feature in many IDEs.
+                <kbd>Mod-Shift-'</kbd> runs <code>goToDefinition</code>: with the cursor in an identifier, select its (first) definition. This is similar to the "go to definition" feature in many IDEs.
             </li>
         </ul>   
 
@@ -59,7 +58,7 @@
         </p>
 
         <p>
-            This is driven by some [custom props](https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/miniscript.grammar#L4) in the Miniscript grammar. These mark grammar nodes that establish scope, uses and definitions of identifiers. The Miniscript grammar is explained below. With these props, Reflector can cross-reference identifiers and show you where they are defined and used. This is probably quite an inefficient process right now but it works for small files in a simple grammar like this one.
+            This is driven by some <a href="https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/miniscript.grammar#L4">custom props</a> in the Miniscript grammar. These mark grammar nodes that establish scope, uses and definitions of identifiers. The Miniscript grammar is explained below. With these props, Reflector can cross-reference identifiers and show you where they are defined and used. This is probably quite an inefficient process right now but it works for small files in a simple grammar like this one.
         </p>
 
         <p>
@@ -67,13 +66,13 @@
         </p>
 
         <p>
-            The linter also shows information markers when a definition is unused. Unused functions and local variables both have an [Action](https://codemirror.net/docs/ref/#lint.Action) that allows the unused definition to be removed. Here is an [example of how to implement this](https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/main.ts#L96) for Miniscript. The `Action` simply walks up the syntax tree until it finds the `FunctionDeclaration` node, then removes its text from the document. Because this is not aware of the skipped space nodes around the removed text, the formatting can be a bit off. This is a limitation of the current implementation.
+            The linter also shows information markers when a definition is unused. Unused functions and local variables both have an <a href="https://codemirror.net/docs/ref/#lint.Action">Action</a> that allows the unused definition to be removed. Here is an <a href="https://github.com/duncanpierce/codemirror-reflector/blob/22a07b97534087338d708ac31b4de9ac1efb20db/example/main.ts#L96">example of how to implement this</a> for Miniscript. The <code>Action</code> walks up the syntax tree until it finds the <code>FunctionDeclaration</code> node, then removes its text from the document. Because this is not aware of the skipped space nodes around the removed text, the formatting can be a bit off. This is a limitation of the current implementation.
         </p>
 
         <p>
-            Another linter rule provides an Action that can fix an undefined identifier by declaring a local or global variable.
+            Another linter rule provides an Action that can fix an undefined identifier by declaring a local or global variable. It does this by inserting a text template and substituting in the identifier name.
         </p>
-        
+
         <p>
             I've also, for no good reason other than experimenting with recognising nearby document structure, included a lint rule to suggest you shouldn't put a comment after a statement.
         </p>
@@ -81,27 +80,27 @@
         <h2>Explanation of Miniscript</h2>
 
         <p>
-            The [grammar is here](https://github.com/duncanpierce/codemirror-reflector/blob/main/example/miniscript.grammar) but, in summary:
+            The <a href="https://github.com/duncanpierce/codemirror-reflector/blob/main/example/miniscript.grammar">grammar is here</a> but, in summary:
         </p>
 
         <ul>
             <li>
-                `func NAME(ARG1, ARG2) { STATEMENTS }` defines a function. Functions in Miniscript are global and do not have to be defined before they are used. Function names must be unique. Function parameters must be unique within the function. Their scope ends at `}`
+                <code>func NAME(ARG1, ARG2) { STATEMENTS }</code> defines a function. Functions in Miniscript are global and do not have to be defined before they are used. Function names must be unique. Function parameters must be unique within the function. Their scope ends at <code>}</code>
             </li>
             <li>
-                `var NAME;` at the top level, alongside functions, defines a global variable. Like functions, global variables do not need to be defined before they are used.
+                <code>var NAME;</code> at the top level, alongside functions, defines a global variable. Like functions, global variables do not need to be defined before they are used.
             </li>
             <li>
-                `var NAME;` within a function body (`{` and `}`) defines a local variable. Local variables need to be defined before they can be used. It is allowed to redefine an existing local variable or parameter within the same scope.
+                <code>var NAME;</code> within a function body (<code>{...}</code>) defines a local variable. Local variables need to be defined before they can be used. It is allowed to redefine an existing local variable or parameter within the same scope.
             </li>
             <li>
                 Miniscript places function and variable definitions in a separate namespace. This means you can have a function and a variable with the same name. <strong>This is not yet implemented</strong>.
             </li>
             <li>
-                There are also numbers and comments. Comments start with `#` and continue to the end of the line.
+                There are also numbers and comments. Comments start with <code>#</code> and continue to the end of the line.
             </li>
             <li>
-                Finally, some basic arithmetic is allowed: `+`, `-`, `*`, `/`, `(` and `)`. There is operator precedence and associativity - [standard Lezer features](https://lezer.codemirror.net/docs/guide/#writing-a-grammar).
+                Finally, some basic arithmetic is allowed: <code>+ - * / ( )`</code>. There is operator precedence and associativity - <a href="https://lezer.codemirror.net/docs/guide/#writing-a-grammar">standard Lezer features</a>.
             </li>
         </ul>
 
