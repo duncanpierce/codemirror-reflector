@@ -12,5 +12,5 @@
       "useDefineForClassFields": true,
       "noEmit": true,
   },
-  "include": ["src", "example", "../duncanpierce.github.io/assets", "../duncanpierce.github.io/assets", "../duncanpierce.github.io/assets"],
+  "include": ["src", "example", "../duncanpierce.github.io/assets", "../duncanpierce.github.io/assets", "../duncanpierce.github.io/assets", "../duncanpierce.github.io/assets"],
 }
